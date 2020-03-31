@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="4d9915c4-2b9a-4737-820c-ec78dc21f10b" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="lexer" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+        <option value="JUnit5 Test Class" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectId" id="1Xw8lDSaIW1vsYQkF1s1dAiwkBf" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="Downloaded.Files.Path.Enabled" value="false" />
+    <property name="Repository.Attach.Annotations" value="false" />
+    <property name="Repository.Attach.JavaDocs" value="false" />
+    <property name="Repository.Attach.Sources" value="false" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary" value="JUnit5" />
+    <property name="com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5" value="" />
+    <property name="create.test.in.the.same.root" value="true" />
+    <property name="project.structure.last.edited" value="Libraries" />
+    <property name="project.structure.proportion" value="0.0" />
+    <property name="project.structure.side.proportion" value="0.2" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CreateTestDialog.RecentsKey">
+      <recent name="" />
+    </key>
+    <key name="CreateTestDialog.Recents.Supers">
+      <recent name="" />
+    </key>
+  </component>
+  <component name="RunManager" selected="JUnit.LexerTest">
+    <configuration name="Lexer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="Lexer" />
+      <module name="lab1" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LexerTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="lab1" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="MAIN_CLASS_NAME" value="LexerTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LexerTest.ignoring_comments" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="lab1" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="MAIN_CLASS_NAME" value="LexerTest" />
+      <option name="METHOD_NAME" value="ignoring_comments" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LexerTest.ownership_check" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="lab1" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="MAIN_CLASS_NAME" value="LexerTest" />
+      <option name="METHOD_NAME" value="ownership_check" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LexerTest.space_splitting" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="lab1" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="MAIN_CLASS_NAME" value="LexerTest" />
+      <option name="METHOD_NAME" value="space_splitting" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.LexerTest" />
+        <item itemvalue="Application.Lexer" />
+        <item itemvalue="JUnit.LexerTest.ignoring_comments" />
+        <item itemvalue="JUnit.LexerTest.ownership_check" />
+        <item itemvalue="JUnit.LexerTest.space_splitting" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="4d9915c4-2b9a-4737-820c-ec78dc21f10b" name="Default Changelist" comment="" />
+      <created>1581945944288</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1581945944288</updated>
+      <workItem from="1581945948615" duration="9108000" />
+      <workItem from="1581955519156" duration="25000" />
+      <workItem from="1582027825526" duration="4368000" />
+      <workItem from="1582034098771" duration="9611000" />
+      <workItem from="1582077706956" duration="997000" />
+      <workItem from="1582175736735" duration="3220000" />
+      <workItem from="1582267706095" duration="6406000" />
+      <workItem from="1582364388006" duration="2024000" />
+      <workItem from="1582366450523" duration="4257000" />
+      <workItem from="1582380962375" duration="11831000" />
+      <workItem from="1582458811695" duration="16323000" />
+      <workItem from="1582523506011" duration="1804000" />
+      <workItem from="1582548029768" duration="10587000" />
+      <workItem from="1582605467428" duration="125000" />
+      <workItem from="1582632211074" duration="12564000" />
+      <workItem from="1582651426227" duration="433000" />
+      <workItem from="1582785474204" duration="9000" />
+      <workItem from="1583077092448" duration="599000" />
+      <workItem from="1583237480943" duration="165000" />
+      <workItem from="1583240200110" duration="763000" />
+      <workItem from="1583283841205" duration="3125000" />
+      <workItem from="1583293489983" duration="40000" />
+      <workItem from="1583330044981" duration="943000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="255" y="27" width="898" height="741" key="#All_in_lab1" timestamp="1582366637125">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state x="255" y="27" width="898" height="741" key="#All_in_lab1/53.27.1313.741@53.27.1313.741" timestamp="1582366637125" />
+    <state x="304" y="59" width="800" height="684" key="#Project_Structure" timestamp="1581945970715">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state x="304" y="59" width="800" height="684" key="#Project_Structure/53.27.1313.741@53.27.1313.741" timestamp="1581945970715" />
+    <state x="432" y="101" width="544" height="599" key="#com.intellij.ide.util.MemberChooser" timestamp="1582030578604">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state x="432" y="101" width="544" height="599" key="#com.intellij.ide.util.MemberChooser/53.27.1313.741@53.27.1313.741" timestamp="1582030578604" />
+    <state x="628" y="152" width="424" height="491" key="FileChooserDialogImpl" timestamp="1583331987491">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state x="628" y="152" width="424" height="491" key="FileChooserDialogImpl/53.27.1313.741@53.27.1313.741" timestamp="1583331987491" />
+    <state width="1267" height="141" key="GridCell.Tab.0.bottom" timestamp="1583287677678">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state width="1267" height="141" key="GridCell.Tab.0.bottom/53.27.1313.741@53.27.1313.741" timestamp="1583287677678" />
+    <state width="1267" height="141" key="GridCell.Tab.0.center" timestamp="1583287677677">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state width="1267" height="141" key="GridCell.Tab.0.center/53.27.1313.741@53.27.1313.741" timestamp="1583287677677" />
+    <state width="1267" height="141" key="GridCell.Tab.0.left" timestamp="1583287677677">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state width="1267" height="141" key="GridCell.Tab.0.left/53.27.1313.741@53.27.1313.741" timestamp="1583287677677" />
+    <state width="1267" height="141" key="GridCell.Tab.0.right" timestamp="1583287677677">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state width="1267" height="141" key="GridCell.Tab.0.right/53.27.1313.741@53.27.1313.741" timestamp="1583287677677" />
+    <state x="192" y="27" width="1024" height="741" key="SettingsEditor" timestamp="1582366573111">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state x="192" y="27" width="1024" height="741" key="SettingsEditor/53.27.1313.741@53.27.1313.741" timestamp="1582366573111" />
+    <state x="365" y="225" key="com.intellij.ide.util.TipDialog" timestamp="1583330048018">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state x="365" y="225" key="com.intellij.ide.util.TipDialog/53.27.1313.741@53.27.1313.741" timestamp="1583330048018" />
+    <state x="376" y="293" width="636" height="231" key="com.intellij.jarRepository.RepositoryAttachDialog-DOWNLOAD" timestamp="1582366563294">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state x="376" y="293" width="636" height="231" key="com.intellij.jarRepository.RepositoryAttachDialog-DOWNLOAD/53.27.1313.741@53.27.1313.741" timestamp="1582366563294" />
+    <state x="483" y="102" width="442" height="597" key="com.intellij.testIntegration.createTest.CreateTestDialog" timestamp="1582365354915">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state x="483" y="102" width="442" height="597" key="com.intellij.testIntegration.createTest.CreateTestDialog/53.27.1313.741@53.27.1313.741" timestamp="1582365354915" />
+    <state x="515" y="90" width="660" height="609" key="new project wizard" timestamp="1583332053794">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state x="515" y="90" width="660" height="609" key="new project wizard/53.27.1313.741@53.27.1313.741" timestamp="1583332053794" />
+    <state x="373" y="174" width="672" height="677" key="run.anything.popup" timestamp="1582030691654">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state x="373" y="174" width="672" height="677" key="run.anything.popup/53.27.1313.741@53.27.1313.741" timestamp="1582030691654" />
+    <state x="372" y="89" width="672" height="676" key="search.everywhere.popup" timestamp="1582478187560">
+      <screen x="53" y="27" width="1313" height="741" />
+    </state>
+    <state x="372" y="89" width="672" height="676" key="search.everywhere.popup/53.27.1313.741@53.27.1313.741" timestamp="1582478187560" />
+  </component>
+</project>
