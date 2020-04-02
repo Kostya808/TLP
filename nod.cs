@@ -1,4 +1,3 @@
-// // a = 1 + 2 * 3;
 // // using System;
 
 // // namespace ConsoleApplication2
@@ -31,14 +30,3 @@ public class Program
     }
 }
 // // }
-// int a = 2 + 2 *
-// int a = 2 + 2 * ;
-// int a = 2
-// int a =
-// int a
-// a = 2
-// a = a + b +
-// a + 
-// a
-// a = a + b + 2 + s *
-// a*a
