@@ -15,9 +15,9 @@ public class Parser {
     private static String[]assignmentOperations = new String[] {"OperatorAssignment", "OperatorAddAssign","OperatorSubAssign",
                                             "OperatorMultAssign", "OperatorDivAssign"};
     private static String[]accessModifiers = new String[] {"KeyWordPublic", "KeyWordPrivate"};
-    private static String[]dataType = new String[] {"Void", "Int", "String"};
+    private static String[]dataType = new String[] {"Void", "Int", "String", "Double"};
     private static String[]variable = new String[] {"Id", "DecimalInteger", "Arithmetic expression", "StringLiteral", "Array element",
-                                            "Logical expression"};
+                                            "Logical expression", "NotAnInteger"};
     private static String[]Brace = new String[] {"LBrace", "LParen", "LSquareBracket", "RBrace", "RParen", "RSquareBracket"};
     private static String[]crement = new String[] {"OperatorIncrement", "OperatorDecrement"};
     private static String[]logicalOperation = new String[]{"OperatorMore", "OperatorSmaller", "OperatorLessOrEqual", "OperatorMoreOrEqual",

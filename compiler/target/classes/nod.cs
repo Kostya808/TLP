@@ -6,14 +6,11 @@ public class Program
 {
     public static void Main() 
     {
-       int a = /* */15; //комментарий
+       int a = 15; 
        int b;
-       b = 5; /*Комментарий*/
-        /*Комментарий
-        КОММЕНТАРИЙ
-        КОММЕНТАРИЙ!!!
-        */
-        for /*И ЗДЕСЬ КОММЕНТАРИЙ*/ (int i=a; i > 0; i--)
+       b = 5; 
+
+        for (int i=a; i > 0; i--)
         {
             if (a % i == 0)
             {
@@ -26,13 +23,8 @@ public class Program
                 }
             }
         }
-        b = i + 2;
         string Out = "Добро пожаловать в C#!)";
         Console.WriteLine(Out);
     }
 }
 // // }
-// int a = 2 + 3 * 4 + 6;
-
-// a = 2 + 3 * 4 + 6;
-// a = 2 + "3";

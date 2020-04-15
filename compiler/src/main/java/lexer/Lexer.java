@@ -224,6 +224,8 @@ public class Lexer {
                 return "Void";
             case ("int"):
                 return "Int";
+            case ("double"):
+                return "Double";
             case ("string"):
                 return "String";
             case ("public"):

@@ -56,20 +56,74 @@ public class SemanticAnalysis {
                         buffer.add(var);
                         table.put(nameVar, buffer);
                     }
-//                    System.out.println(nameVar + " " + scope);
+                    analysis(node.getChildren(), scope, level);
                     break;
                 case ("Assign operation"):
-                    check_assign_op(node.getChildren(), scope);
+                    boolean noError = check_assign_op(node.getChildren(), scope);
+                    if(!noError) {
+                        System.out.println("\nDifferent types of data " + get_info_node(node));
+                    }
                     break;
             }
         }
     }
 
-    public static void check_assign_op(List<AST> listNodes, String scope) {
-        if(listNodes.get(2).getTypeToken().equals("Arithmetic expression")) {
-            check_arithmetic_expression(listNodes.get(2).getChildren(), scope);
+    public static boolean check_assign_op(List<AST> listNodes, String scope) {
+        switch (scope_contains_var(scope, listNodes.get(0))) {
+            case ("double"):
+                switch (listNodes.get(2).getTypeToken()) {
+                    case ("Arithmetic expression"):
+                        listNodes.get(2).setTypeToken(check_arithmetic_expression(listNodes.get(2).getChildren(), scope));
+                        return check_assign_op(listNodes, scope);
+                    case ("Id"):
+                        String dataType = scope_contains_var(scope, listNodes.get(2));
+                        if(dataType.equals("int"))
+                            type_conversion("NotAnInteger", listNodes.get(2));
+                        return !dataType.equals("string") && !dataType.equals("");
+                    case "StringLiteral":
+                        return false;
+                    case "DecimalInteger":
+                        type_conversion("NotAnInteger", listNodes.get(2));
+                        return true;
+                    case "NotAnInteger":
+                        return true;
+                }
+                break;
+            case ("int"):
+                switch (listNodes.get(2).getTypeToken()) {
+                    case ("Arithmetic expression"):
+                        listNodes.get(2).setTypeToken(check_arithmetic_expression(listNodes.get(2).getChildren(), scope));
+                        return check_assign_op(listNodes, scope);
+                    case ("Id"):
+                        String dataType = scope_contains_var(scope, listNodes.get(2));
+                        if(dataType.equals("double"))
+                            type_conversion("DecimalInteger", listNodes.get(2));
+                        return !dataType.equals("string") && !dataType.equals("");
+                    case ("StringLiteral"):
+                        return false;
+                    case ("DecimalInteger"):
+                        return true;
+                    case ("NotAnInteger"):
+                        type_conversion("DecimalInteger", listNodes.get(2));
+                        return true;
+                }
+                break;
+            case ("string"):
+                switch (listNodes.get(2).getTypeToken()) {
+                    case ("Arithmetic expression"):
+                        listNodes.get(2).setTypeToken(check_arithmetic_expression(listNodes.get(2).getChildren(), scope));
+                        return check_assign_op(listNodes, scope);
+                    case ("Id"):
+                        return scope_contains_var(scope, listNodes.get(2)).equals("string");
+                    case "StringLiteral":
+                        return true;
+                    case "DecimalInteger":
+                    case "NotAnInteger":
+                        return false;
+                }
+                break;
         }
-
+        return false;
     }
 
     public static String check_arithmetic_expression(List<AST> listNodes, String scope) {
@@ -123,7 +177,9 @@ public class SemanticAnalysis {
                 break;
             case ("StringLiteral"):
                 if(typeVar2.equals("StringLiteral")) {
-                    return "string";
+                    return "StringLiteral";
+                } else if(typeVar2.equals("Id")) {
+                    return type_comparison(typeVar1, data_type_def(scope_contains_var(scope, node2)), node1, node2, scope);
                 } else {
                     return "Error";
                 }
@@ -158,15 +214,35 @@ public class SemanticAnalysis {
     }
 
     public static void type_conversion(String type, AST node) {
-        if(!node.getTypeToken().equals("Id")) {
-            if (type.equals("NotAnInteger")) {
-                if (node.getChildren().isEmpty()) {
-                    node.setTypeToken(type);
-                    node.setToken(node.getToken() + ".0");
-                } else {
-                    type_conversion(type, node.getChildren().get(0));
-                    type_conversion(type, node.getChildren().get(2));
-                }
+        if(node.getTypeToken().equals("Id")) {
+            switch (type) {
+                case ("NotAnInteger"):
+                    node.setTypeToken("Id to double");
+                    break;
+                case ("DecimalInteger"):
+                    node.setTypeToken("Id to int");
+                    break;
+            }
+        } else {
+            switch (type) {
+                case ("NotAnInteger"):
+                    if (node.getChildren().isEmpty()) {
+                        node.setTypeToken(type);
+                        node.setToken(node.getToken() + ".0");
+                    } else {
+                        type_conversion(type, node.getChildren().get(0));
+                        type_conversion(type, node.getChildren().get(2));
+                    }
+                    break;
+                case ("DecimalInteger"):
+                    if (node.getChildren().isEmpty()) {
+                        node.setTypeToken(type);
+                        node.setToken(node.getToken().substring(0, node.getToken().indexOf(".")));
+                    } else {
+                        type_conversion(type, node.getChildren().get(0));
+                        type_conversion(type, node.getChildren().get(2));
+                    }
+                    break;
             }
         }
     }
