@@ -1,8 +1,0 @@
-Compiler.class
-parser/Parser.class
-supporting_structures/ScopeVar.class
-lexer/Lexer.class
-AST/AST.class
-supporting_structures/Token.class
-supporting_structures/StorageBrace.class
-symbol_table/SymbolTable.class

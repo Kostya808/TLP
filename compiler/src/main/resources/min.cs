@@ -24,6 +24,7 @@ public class Program
             }
         }
         Console.Write(numbers[minIndex]);
+        double a = 2 + numbers[2] * numbers[1];
     }
 }
 // }

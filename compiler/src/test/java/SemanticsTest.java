@@ -59,8 +59,7 @@ public class SemanticsTest {
         List<AST> list = create_tree_by_line("public static void Main ( ) { int a ; }");
         SemanticAnalysis.analysis(list, "Level", 0);
 
-        AST node = new AST();
-        node.setToken("a");
+        AST node = new AST("a", "Id");
         String actual = SemanticAnalysis.scope_contains_var("Level -> 1a", node);
 
         String expected = "int";
@@ -72,8 +71,7 @@ public class SemanticsTest {
         List<AST> list = create_tree_by_line("public static void Main ( ) { int a ; }");
         SemanticAnalysis.analysis(list, "Level", 0);
 
-        AST node = new AST();
-        node.setToken("a");
+        AST node = new AST("a", "Id");
         String actual = SemanticAnalysis.scope_contains_var("Level -> 1a -> 2a", node);
         String expected = "int";
         Assert.assertEquals(expected, actual);
@@ -180,6 +178,36 @@ public class SemanticsTest {
         List<AST> listExpr = create_tree_by_line("a = b + \"uper!\" ;");
 
         boolean actual = SemanticAnalysis.check_assign_op(listExpr.get(0).getChildren(), "Level -> 1a -> 2a");
+        boolean expected = true;
+        Assert.assertEquals(expected, actual);
+    }
+
+    @org.junit.jupiter.api.Test
+    void check_ind_in_par1() {
+        List<AST> listExpr = create_tree_by_line("array [ 1 ]");
+
+        boolean actual = SemanticAnalysis.check_item_index(listExpr.get(0).getChildren(), "Level -> 1a -> 2a");
+        boolean expected = true;
+        Assert.assertEquals(expected, actual);
+    }
+
+    @org.junit.jupiter.api.Test
+    void check_ind_in_par2() {
+        List<AST> listExpr = create_tree_by_line("array [ 1.3 ]");
+
+        boolean actual = SemanticAnalysis.check_item_index(listExpr.get(0).getChildren(), "Level -> 1a -> 2a");
+        boolean expected = false;
+        Assert.assertEquals(expected, actual);
+    }
+
+    @org.junit.jupiter.api.Test
+    void check_ind_in_par3() {
+        List<AST> list = create_tree_by_line("public static void Main ( ) { int a ; }");
+        SemanticAnalysis.analysis(list, "Level", 0);
+
+        List<AST> listExpr = create_tree_by_line("array [ a ] ;");
+
+        boolean actual = SemanticAnalysis.check_item_index(listExpr.get(0).getChildren(), "Level -> 1a -> 2a");
         boolean expected = true;
         Assert.assertEquals(expected, actual);
     }

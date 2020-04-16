@@ -69,15 +69,17 @@ public class SemanticAnalysis {
     }
 
     public static boolean check_assign_op(List<AST> listNodes, String scope) {
-        switch (scope_contains_var(scope, listNodes.get(0))) {
+        String typeVar = scope_contains_var(scope, listNodes.get(0));
+        switch (typeVar) {
             case ("double"):
                 switch (listNodes.get(2).getTypeToken()) {
                     case ("Arithmetic expression"):
                         listNodes.get(2).setTypeToken(check_arithmetic_expression(listNodes.get(2).getChildren(), scope));
                         return check_assign_op(listNodes, scope);
+                    case ("Array element"):
                     case ("Id"):
                         String dataType = scope_contains_var(scope, listNodes.get(2));
-                        if(dataType.equals("int"))
+                        if (dataType.equals("int"))
                             type_conversion("NotAnInteger", listNodes.get(2));
                         return !dataType.equals("string") && !dataType.equals("");
                     case "StringLiteral":
@@ -94,9 +96,10 @@ public class SemanticAnalysis {
                     case ("Arithmetic expression"):
                         listNodes.get(2).setTypeToken(check_arithmetic_expression(listNodes.get(2).getChildren(), scope));
                         return check_assign_op(listNodes, scope);
+                    case ("Array element"):
                     case ("Id"):
                         String dataType = scope_contains_var(scope, listNodes.get(2));
-                        if(dataType.equals("double"))
+                        if (dataType.equals("double"))
                             type_conversion("DecimalInteger", listNodes.get(2));
                         return !dataType.equals("string") && !dataType.equals("");
                     case ("StringLiteral"):
@@ -113,6 +116,7 @@ public class SemanticAnalysis {
                     case ("Arithmetic expression"):
                         listNodes.get(2).setTypeToken(check_arithmetic_expression(listNodes.get(2).getChildren(), scope));
                         return check_assign_op(listNodes, scope);
+                    case ("Array element"):
                     case ("Id"):
                         return scope_contains_var(scope, listNodes.get(2)).equals("string");
                     case "StringLiteral":
@@ -124,6 +128,21 @@ public class SemanticAnalysis {
                 break;
         }
         return false;
+    }
+
+    public static boolean check_item_index(List<AST> listNodes, String scope) {
+        AST nodeIndex = listNodes.get(1).getChildren().get(1);
+        String typeItemIndex = nodeIndex.getTypeToken();
+
+        switch (typeItemIndex) {
+            case ("DecimalInteger"):
+                return true;
+            case ("Id"):
+                String typeIndex = scope_contains_var(scope, nodeIndex);
+                return typeIndex.equals("int");
+            default:
+                return false;
+        }
     }
 
     public static String check_arithmetic_expression(List<AST> listNodes, String scope) {
@@ -156,10 +175,12 @@ public class SemanticAnalysis {
                     case "NotAnInteger":
                         type_conversion("NotAnInteger", node1);
                         return "NotAnInteger";
+                    case ("Array element"):
                     case "Id":
                         return type_comparison(typeVar1, data_type_def(scope_contains_var(scope, node2)), node1, node2, scope);
                 }
                 break;
+            case ("Array element"):
             case ("Id"):
                 return type_comparison(data_type_def(scope_contains_var(scope, node1)), typeVar2, node1, node2, scope);
             case ("NotAnInteger"):
@@ -171,6 +192,7 @@ public class SemanticAnalysis {
                         return "NotAnInteger";
                     case "NotAnInteger":
                         return "NotAnInteger";
+                    case ("Array element"):
                     case "Id":
                         return type_comparison(typeVar1, data_type_def(scope_contains_var(scope, node2)), node1, node2, scope);
                 }
@@ -178,7 +200,7 @@ public class SemanticAnalysis {
             case ("StringLiteral"):
                 if(typeVar2.equals("StringLiteral")) {
                     return "StringLiteral";
-                } else if(typeVar2.equals("Id")) {
+                } else if(typeVar2.equals("Id") || typeVar2.equals("Array element")) {
                     return type_comparison(typeVar1, data_type_def(scope_contains_var(scope, node2)), node1, node2, scope);
                 } else {
                     return "Error";
@@ -200,6 +222,12 @@ public class SemanticAnalysis {
     }
 
     public static String scope_contains_var(String scope, AST var) {
+        if(var.getTypeToken().equals("Array element")) {
+            if (!check_item_index(var.getChildren(), scope)) {
+                System.out.println("Array index can only be an integer");
+            }
+            return scope_contains_var(scope, var.getChildren().get(0));
+        }
         String nameVar = var.getToken();
         if (table.containsKey(nameVar)) {
             List<ScopeVar> listScopes = table.get(nameVar);
@@ -214,13 +242,13 @@ public class SemanticAnalysis {
     }
 
     public static void type_conversion(String type, AST node) {
-        if(node.getTypeToken().equals("Id")) {
+        if(node.getTypeToken().equals("Id") ||  node.getTypeToken().equals("Array element")) {
             switch (type) {
                 case ("NotAnInteger"):
-                    node.setTypeToken("Id to double");
+                    node.setTypeToken(node.getTypeToken() + " to double");
                     break;
                 case ("DecimalInteger"):
-                    node.setTypeToken("Id to int");
+                    node.setTypeToken(node.getTypeToken() + " to int");
                     break;
             }
         } else {
@@ -275,9 +303,5 @@ public class SemanticAnalysis {
 
     public static String get_info_node(AST node) {
         return "' " + node.getToken() + " ' <" + node.getRow() + " : " + node.getCol() + ">";
-    }
-
-    public static HashMap<String, List<ScopeVar>> getTable() {
-        return table;
     }
 }

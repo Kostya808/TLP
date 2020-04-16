@@ -30,6 +30,11 @@ public class AST {
         this.children = children;
     }
 
+    public AST(String token, String typeToken) {
+        this.token = token;
+        this.typeToken = typeToken;
+    }
+
     public AST() { }
 
 //    public void add_children(AST child) {

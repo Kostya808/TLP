@@ -22,9 +22,10 @@ public class Compiler {
         }
         Parser.check_error(listNodes);
         Parser.print_error();
-//        for (AST s : listNodes) { AST.print_tree(s, 4, 100); }
+
         SemanticAnalysis.analysis(listNodes, "Level", 0);
-//        SemanticAnalysis.print_table();
+        SemanticAnalysis.print_table();
+        System.out.print("\n");
         for (AST s : listNodes) { AST.print_tree(s, 4, 100); }
     }
 }
