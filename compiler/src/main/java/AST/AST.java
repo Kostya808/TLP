@@ -37,9 +37,9 @@ public class AST {
 
     public AST() { }
 
-//    public void add_children(AST child) {
-//        children.add(child);
-//    }
+    public void add_children(AST child) {
+        children.add(child);
+    }
 
     public static void print_tree(AST node, int indent, int depth) {
         System.out.println("< '" + node.getToken() + "' : '" + node.getTypeToken() + "' " + node.getRow() + " : " + node.getCol()+ ">");

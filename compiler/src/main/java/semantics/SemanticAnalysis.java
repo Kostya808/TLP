@@ -8,6 +8,7 @@ import java.util.*;
 public class SemanticAnalysis {
     private static HashMap<String, List<ScopeVar>> table = new HashMap<>();
 
+    // TODO: 22.04.2020 int b, x; 
     public static void analysis(List<AST> listNodes, String scope, int level) {
         int scopeCount = 1;
         for(AST node: listNodes) {

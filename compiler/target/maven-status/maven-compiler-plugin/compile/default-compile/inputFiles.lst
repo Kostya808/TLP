@@ -1,0 +1,8 @@
+/home/kostya/6semestr/tlp/compiler/src/main/java/lexer/Lexer.java
+/home/kostya/6semestr/tlp/compiler/src/main/java/AST/AST.java
+/home/kostya/6semestr/tlp/compiler/src/main/java/parser/Parser.java
+/home/kostya/6semestr/tlp/compiler/src/main/java/supporting_structures/Token.java
+/home/kostya/6semestr/tlp/compiler/src/main/java/supporting_structures/StorageBrace.java
+/home/kostya/6semestr/tlp/compiler/src/main/java/semantics/SemanticAnalysis.java
+/home/kostya/6semestr/tlp/compiler/src/main/java/Compiler.java
+/home/kostya/6semestr/tlp/compiler/src/main/java/supporting_structures/ScopeVar.java
