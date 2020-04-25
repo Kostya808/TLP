@@ -1,16 +1,20 @@
 package semantics;
 
 import AST.AST;
+import supporting_structures.DeclaredVar;
 import supporting_structures.ScopeVar;
 
 import java.util.*;
 
 public class SemanticAnalysis {
     private static HashMap<String, List<ScopeVar>> table = new HashMap<>();
+    private static List<String> errorsSem = new ArrayList<>();
+    private static HashMap<String, List<DeclaredVar>> declaredFunc = new HashMap<>();
+    private static List<AST> rawNodes = new ArrayList<AST>();
 
-    // TODO: 22.04.2020 int b, x; 
     public static void analysis(List<AST> listNodes, String scope, int level) {
         int scopeCount = 1;
+        String nameVar;
         for(AST node: listNodes) {
             switch (node.getTypeToken()){
                 case ("Block class"):
@@ -19,8 +23,14 @@ public class SemanticAnalysis {
                     }
                     break;
                 case ("Function declaration"):
+                    function_declaration_processing(node.getChildren());
+                    if (!node.getChildren().isEmpty()) {
+                        analysis(node.getChildren(), scope, level);
+                    }
+                    break;
                 case ("Declaration for"):
                 case ("Brace block"):
+                case ("Brace block function"):
                 case ("Brace block for"):
                 case ("Parenthesis block"):
                 case ("Memory assign"):
@@ -39,34 +49,96 @@ public class SemanticAnalysis {
                         scopeCount++;
                     }
                     break;
+                case ("Creat several var fin"):
+                    String typeVariable = node_type_definition(node.getChildren());
+                    for(AST childNode : node.getChildren()) {
+                        switch (childNode.getTypeToken()) {
+                            case ("Id"):
+                                nameVar = childNode.getToken();
+                                break;
+                            case ("Enum var"):
+                            case ("Assign operation"):
+                            case ("Assign operation with comma"):
+                                nameVar = childNode.getChildren().get(0).getToken();
+                                break;
+                            default:
+                                nameVar = "";
+                                break;
+                        }
+                        if(!nameVar.equals("")) {
+                            ScopeVar var = new ScopeVar(childNode, scope, typeVariable);
+                            add_to_table(nameVar, var);
+                        }
+                    }
+                    analysis(node.getChildren(), scope, level);
+                    break;
+                case ("Typed id"):
                 case ("Creat and assign"):
                 case ("Var creat fin"):
                 case ("Var creat"):
                     AST varNode = name_definition(node.getChildren());
                     String typeVar = node_type_definition(node.getChildren());
                     assert varNode != null;
-                    String nameVar = varNode.getToken();
+                    nameVar = varNode.getToken();
                     ScopeVar var = new ScopeVar(varNode, scope, typeVar);
-                    if (table.containsKey(nameVar)) {
-                        List <ScopeVar> buffer = table.get(nameVar);
-                        buffer.add(0, var);
-                        table.put(nameVar, buffer);
-                    }
-                    else {
-                        List <ScopeVar> buffer = new ArrayList<>();
-                        buffer.add(var);
-                        table.put(nameVar, buffer);
-                    }
+                    add_to_table(nameVar, var);
                     analysis(node.getChildren(), scope, level);
                     break;
+                case ("Assign operation with comma"):
                 case ("Assign operation"):
                     boolean noError = check_assign_op(node.getChildren(), scope);
                     if(!noError) {
-                        System.out.println("\nDifferent types of data " + get_info_node(node));
+                        add_error(node, "Different types of data", null);
                     }
+                    break;
+                case ("Call func fin"):
+                    rawNodes.add(node);
                     break;
             }
         }
+        if(!rawNodes.isEmpty() && scope.equals("Level")) {
+            for (AST node : rawNodes) {
+                switch (node.getTypeToken()) {
+                    case ("Call func fin"):
+                        function_call_processing(node.getChildren().get(0).getChildren());
+                        break;
+                }
+            }
+        }
+    }
+
+    public static void function_call_processing(List<AST> list) {
+        String funcNameCall = list.get(0).getToken();
+        if(declaredFunc.containsKey(funcNameCall)) {
+            List <DeclaredVar> listDeclaredVar = declaredFunc.get(funcNameCall);
+            List<AST> listPassedVar = list.get(1).getChildren();
+
+            if(listPassedVar.size() - 2 != listDeclaredVar.size()) {
+                add_error(list.get(1), "The number of function arguments passed and received is different", null);
+                return;
+            }
+
+            for(AST passedVar : listPassedVar) {
+                switch (passedVar.getTypeToken()) {
+                    case ("LParen"):
+                    case ("RParen"):
+                        continue;
+                    case ("Id"):
+                        break;
+                    case "StringLiteral":
+                    case "DecimalInteger":
+                    case "NotAnInteger":
+//                        data_type_def(passedVar.getTypeToken());
+                }
+            }
+        } else {
+            add_error(list.get(0), "No function declared", null);
+            System.out.println();
+        }
+    }
+
+    public static void type_check_passed_var(AST node, String type1, String type2) {
+
     }
 
     public static boolean check_assign_op(List<AST> listNodes, String scope) {
@@ -142,6 +214,7 @@ public class SemanticAnalysis {
                 String typeIndex = scope_contains_var(scope, nodeIndex);
                 return typeIndex.equals("int");
             default:
+                add_error(nodeIndex, "Array index can only be an integer", null);
                 return false;
         }
     }
@@ -157,8 +230,7 @@ public class SemanticAnalysis {
         }
 
         if(comparResult.equals("Error")) {
-            System.out.println("\nDifferent types of data " + get_info_node(listNodes.get(0))
-                    + " and " + get_info_node(listNodes.get(2)));
+            add_error(listNodes.get(0), "Different types of data", listNodes.get(2));
             return "";
         }
 
@@ -218,15 +290,19 @@ public class SemanticAnalysis {
                 return "NotAnInteger";
             case ("string"):
                 return "StringLiteral";
+            case ("DecimalInteger"):
+                return "int";
+            case ("NotAnInteger"):
+                return "double";
+            case ("StringLiteral"):
+                return "string";
         }
         return "";
     }
 
     public static String scope_contains_var(String scope, AST var) {
         if(var.getTypeToken().equals("Array element")) {
-            if (!check_item_index(var.getChildren(), scope)) {
-                System.out.println("Array index can only be an integer");
-            }
+            check_item_index(var.getChildren(), scope);
             return scope_contains_var(scope, var.getChildren().get(0));
         }
         String nameVar = var.getToken();
@@ -238,7 +314,7 @@ public class SemanticAnalysis {
                 }
             }
         }
-        System.out.println("\nVariable " + get_info_node(var) + " not declared!");
+        add_error(var, "Variable not declared", null);
         return "";
     }
 
@@ -294,6 +370,40 @@ public class SemanticAnalysis {
         return (char) (((number - 1) % 26)+'a');
     }
 
+    public static void add_error(AST node1, String error, AST node2) {
+        String errorToken;
+        if(node2 == null) {
+            errorToken = "SEMANTICS: <" + node1.getRow() + " : " + node1.getCol() + " '" + node1.getToken() + "'> " + error;
+        } else {
+            errorToken = "SEMANTICS: <" + node1.getRow() + " : " + node1.getCol() + " '" + node1.getToken() + "'> " +
+                    error + " <" + node2.getRow() + " : " + node2.getCol() + " '" + node2.getToken() + "'>";
+        }
+        errorsSem.add(errorToken);
+    }
+
+    public static void print_error() {
+        if (!errorsSem.isEmpty()) {
+            System.out.print("\n");
+            for (String error : errorsSem) {
+                System.out.println(error);
+            }
+        }
+        System.out.print("\n");
+    }
+
+    public static void add_to_table(String nameVar, ScopeVar var) {
+        if (table.containsKey(nameVar)) {
+            List <ScopeVar> buffer = table.get(nameVar);
+            buffer.add(0, var);
+            table.put(nameVar, buffer);
+        }
+        else {
+            List <ScopeVar> buffer = new ArrayList<>();
+            buffer.add(var);
+            table.put(nameVar, buffer);
+        }
+    }
+
     public static void print_table() {
         for (Map.Entry<String, List<ScopeVar>> entry : table.entrySet()) {
             System.out.print("\n" + entry.getKey() + ":\n");
@@ -302,7 +412,46 @@ public class SemanticAnalysis {
         }
     }
 
-    public static String get_info_node(AST node) {
-        return "' " + node.getToken() + " ' <" + node.getRow() + " : " + node.getCol() + ">";
+    public static void print_declared_func() {
+        for (Map.Entry<String, List<DeclaredVar>> entry : declaredFunc.entrySet()) {
+            System.out.print("\n" + entry.getKey() + ":\n");
+            for (DeclaredVar var : entry.getValue())
+                System.out.println(var.getType() + " " + var.getName() + " ");
+        }
     }
+
+    public static HashMap<String, List<DeclaredVar>> getDeclaredFunc() {
+        return declaredFunc;
+    }
+
+    public static void function_declaration_processing(List<AST> list) {
+        String nameFunction = function_name_definition(list);
+        DeclaredVar var;
+        List<DeclaredVar> listVar = new ArrayList<>();
+        for (AST node : list) {
+            if(node.getTypeToken().equals("Brace block function") || node.getTypeToken().equals("Brace block")) {
+                for (AST nodeInBrace : node.getChildren()) {
+                    if(nodeInBrace.getTypeToken().equals("Typed id")) {
+                        var = new DeclaredVar(nodeInBrace.getChildren().get(0).getToken(), nodeInBrace.getChildren().get(1).getToken());
+                        listVar.add(var);
+                    }
+                }
+                declaredFunc.put(nameFunction, listVar);
+                break;
+            }
+        }
+    }
+
+    public static String function_name_definition(final List<AST> list) {
+        String name = "";
+        for (AST node : list) {
+            if(node.getTypeToken().equals("Typed id")) {
+                name = node.getChildren().get(1).getToken();
+                break;
+            }
+        }
+        return name;
+    }
+
+
 }

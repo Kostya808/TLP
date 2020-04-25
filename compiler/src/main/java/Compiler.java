@@ -20,12 +20,18 @@ public class Compiler {
             File file = new File(args[0]);
             lexer.start(file, listNodes);
         }
-        Parser.check_error(listNodes);
-        Parser.print_error();
 
-        SemanticAnalysis.analysis(listNodes, "Level", 0);
-        SemanticAnalysis.print_table();
-        System.out.print("\n");
+        Parser.check_error(listNodes);
+
         for (AST s : listNodes) { AST.print_tree(s, 4, 100); }
+        SemanticAnalysis.analysis(listNodes, "Level", 0);
+
+//        SemanticAnalysis.print_table();
+        SemanticAnalysis.print_declared_func();
+
+        Parser.print_error();
+        SemanticAnalysis.print_error();
+
+        System.out.print("\n");
     }
 }

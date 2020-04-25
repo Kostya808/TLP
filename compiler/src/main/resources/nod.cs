@@ -6,10 +6,7 @@ public class Program
 {
     public static void Main() 
     {
-       int a = 15; 
-       int b;
-       b = 5; 
-
+       int a = 15, b = 5;
         for (int i=a; i > 0; i--)
         {
             if (a % i == 0)
@@ -23,7 +20,10 @@ public class Program
                 }
             }
         }
-        string Out = "Добро пожаловать в C#!)";
+        print_message("Добро пожаловать в  C#!", s, d, 1, 2, 3, 2.0);
+    }
+
+    public void print_message(string Out, int s, int d) {
         Console.WriteLine(Out);
     }
 }
@@ -31,4 +31,4 @@ public class Program
 
 // int a, b = 2, c;
 
-// public int gg(int k, string f, double f) {}
+// public static int gg(int k, string f, double f) {}

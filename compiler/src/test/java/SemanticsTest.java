@@ -3,9 +3,11 @@ import lexer.Lexer;
 import org.junit.Assert;
 import parser.Parser;
 import semantics.SemanticAnalysis;
+import supporting_structures.DeclaredVar;
 import supporting_structures.Token;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class SemanticsTest {
@@ -211,6 +213,31 @@ public class SemanticsTest {
         boolean expected = true;
         Assert.assertEquals(expected, actual);
     }
+
+    @org.junit.jupiter.api.Test
+    void func_name_def1() {
+        List<AST> list = create_tree_by_line("public static void Main ( )");
+
+        String actual = SemanticAnalysis.function_name_definition(list.get(0).getChildren());
+        String expected = "Main";
+        Assert.assertEquals(expected, actual);
+    }
+
+//    @org.junit.jupiter.api.Test
+//    void add_declared_func_to_map1() {
+//        List<AST> list = create_tree_by_line("public static void Main ( int a , string c )");
+//
+//        SemanticAnalysis.function_declaration_processing(list.get(0).getChildren());
+////        SemanticAnalysis.print_declared_func();
+//
+//        HashMap<String, List<DeclaredVar>> actual = new HashMap<>();
+//        List<DeclaredVar> listVar  = new ArrayList<>();
+//        listVar.add(new DeclaredVar("int", "a"));
+//        listVar.add(new DeclaredVar("string", "c"));
+//        actual.put("Main", listVar);
+//        HashMap<String, List<DeclaredVar>> expected = SemanticAnalysis.getDeclaredFunc();
+//        Assert.assertEquals(expected, actual);
+//    }
 
     List<AST> create_tree_by_line(String str) {
         Token token;

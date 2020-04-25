@@ -351,6 +351,7 @@ public class ParserTest {
         print_test_data(actual, expected);
 
         Parser.node_list_analysis(actual);
+        for (AST s : actual) { AST.print_tree(s, 4, 100); }
 
         System.out.println("\nAfter conversion:");
         print_test_data(actual, expected);

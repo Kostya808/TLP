@@ -18,6 +18,8 @@ public class Parser {
     private static String[]dataType = new String[] {"Void", "Int", "String", "Double"};
     private static String[]variable = new String[] {"Id", "DecimalInteger", "Arithmetic expression", "StringLiteral", "Array element",
                                             "Logical expression", "NotAnInteger"};
+    private static String[]numbers = new String[] {"DecimalInteger", "StringLiteral", "NotAnInteger"};
+    private static String[]passedArguments = new String[] {"DecimalInteger", "StringLiteral", "NotAnInteger", "Id", "Enum numb", "Enum var"};
     private static String[]Brace = new String[] {"LBrace", "LParen", "LSquareBracket", "RBrace", "RParen", "RSquareBracket"};
     private static String[]crement = new String[] {"OperatorIncrement", "OperatorDecrement"};
     private static String[]logicalOperation = new String[]{"OperatorMore", "OperatorSmaller", "OperatorLessOrEqual", "OperatorMoreOrEqual",
@@ -28,10 +30,10 @@ public class Parser {
     private static String[]unfinished = new String[] {"Call func", "Logical expression", "Crement", "Var creat", "Creat several var"};
     private static String[]finished = new String[] {"Crement fin", "Call func fin", "Block function", "Creat and assign", "Var creat fin",
                                             "Block for", "Block if", "Block else", "Block else if", "Assign operation", "Memory assign",
-                                            "Assign operation"};
+                                            "Assign operation", "Creat several var fin"};
 
     private static List<StorageBrace> storBr = new ArrayList<>();
-    private static List<String> errors = new ArrayList<>();
+    private static List<String> errorsParser = new ArrayList<>();
 
     public static void node_list_analysis(List<AST> listNodes) {
         String newNameToken;
@@ -40,7 +42,12 @@ public class Parser {
                 brace_processing(i, listNodes.get(i), listNodes);
             }
             if(i + 1 < listNodes.size()) {
-                if (listNodes.get(i).getTypeToken().equals("Id")) {
+                if (Arrays.asList(numbers).contains(listNodes.get(i).getTypeToken())) {
+                    if (listNodes.get(i + 1).getTypeToken().equals("Comma")) {
+                            node_fusion(listNodes, i, i + 1, "Enum numb");
+                    }
+                }
+                else if (listNodes.get(i).getTypeToken().equals("Id")) {
                     if (Arrays.asList(crement).contains(listNodes.get(i + 1).getTypeToken())) {
                         node_fusion(listNodes, i, i + 1, "Crement");
                     }
@@ -48,7 +55,11 @@ public class Parser {
                         node_fusion(listNodes, i, i + 1, "Array element");
                     }
                     else if (listNodes.get(i + 1).getTypeToken().equals("Comma")) {
-                        node_fusion(listNodes, i, i + 1, "Enum var");
+                        if(i + 2 < listNodes.size())
+                            node_fusion(listNodes, i, i + 1, "Enum var");
+                    }
+                    else if (listNodes.get(i + 1).getTypeToken().equals("Brace block call function") || listNodes.get(i + 1).getTypeToken().equals("Brace block")) {
+                        node_fusion(listNodes, i, i + 1, "Call func");
                     }
                 }
                 else if (Arrays.asList(design).contains(listNodes.get(i).getTypeToken())) {
@@ -79,7 +90,8 @@ public class Parser {
                             node_fusion(listNodes, i, i + 1, newNameToken);
                     }
                 }
-                else if(listNodes.get(i).getTypeToken().equals("Creat several var")) {
+                else if(listNodes.get(i).getTypeToken().equals("Creat several var") || listNodes.get(i).getTypeToken().equals("Var creat with comma")
+                          || listNodes.get(i).getTypeToken().equals("Creat and assign with comma")) {
                     if(listNodes.get(i + 1).getTypeToken().equals("Enum var") || listNodes.get(i + 1).getTypeToken().equals("Assign operation with comma")) {
                         add_to_node(listNodes, i, i + 1, "Creat several var");
                     }
@@ -91,6 +103,7 @@ public class Parser {
                             add_to_node(listNodes, i, i + 2, "Creat several var fin");
                         }
                     }
+                    continue;
                 }
                 else if(Arrays.asList(unfinished).contains(listNodes.get(i).getTypeToken())) {
                     newNameToken = check_finished(i + 1, listNodes);
@@ -133,26 +146,11 @@ public class Parser {
                         node_fusion(listNodes, i, i + 3, newNameToken);
                     }
                 }
-
-            }
-            if(i + 4  < listNodes.size() || i + 3  < listNodes.size()) {
-                if(Arrays.asList(accessModifiers).contains(listNodes.get(i).getTypeToken())) {
+                else if(Arrays.asList(accessModifiers).contains(listNodes.get(i).getTypeToken())) {
                     check_function_declaration(i + 1, listNodes);
                 }
             }
         }
-    }
-
-    public static void add_to_node(List<AST> listNodes, int startingIndex, int endIndex, String tokenTypeNewName) {
-        int i;
-        for(i = startingIndex + 1; i <= endIndex; i++) {
-            AST node = new AST(listNodes.get(i));
-            listNodes.get(startingIndex).add_children(node);
-            listNodes.remove(i);
-            endIndex--;
-            i--;
-        }
-        node_list_analysis(listNodes);
     }
 
     public static void brace_processing(int index, AST node, List<AST> listNodes) {
@@ -209,6 +207,30 @@ public class Parser {
                     newName = "Parenthesis block";
                 break;
             case ("LParen"):
+                if(listNodes.get(startInd + 1).getTypeToken().equals("Typed id")) {
+                    int checkFlag = 0;
+                    for (int i = startInd + 1; i < endInd; i++) {
+                        if(listNodes.get(i).getTypeToken().equals("Typed id"))
+                            checkFlag++;
+                        if(listNodes.get(i + 1).getTypeToken().equals("Comma"))
+                            checkFlag++;
+                    }
+                    if(endInd - startInd - 1 == checkFlag)
+                        return "Brace block function";
+                }
+                if(Arrays.asList(passedArguments).contains(listNodes.get(startInd + 1).getTypeToken())) {
+                    int checkFlag = 0;
+                    String node;
+                    for (int i = startInd + 1; i < endInd; i++) {
+                        node = listNodes.get(i).getTypeToken();
+                        if(Arrays.asList(passedArguments).contains(node))
+                            checkFlag++;
+                    }
+                    int d = endInd - startInd - 1;
+                    System.out.println(checkFlag + "  " + d);
+                    if(endInd - startInd - 1 == checkFlag)
+                        return "Brace block call function";
+                }
                 if(endInd - startInd - 1 == 3) {
                     if(listNodes.get(startInd + 1).getTypeToken().equals("Creat and assign") ||
                             listNodes.get(startInd + 1).getTypeToken().equals("Assign operation")) {
@@ -271,7 +293,9 @@ public class Parser {
                 return "Declaration if";
         }
         if(listNodes.get(operatorIndex).getTypeToken().equals("Id") || listNodes.get(operatorIndex).getTypeToken().equals("IdClassCall")){
-            newName = "Call func";
+            if (listNodes.get(operatorIndex + 1).getTypeToken().equals("Brace block call function") ||
+                                 listNodes.get(operatorIndex + 1).getTypeToken().equals("Brace block"))
+                return "Call func";
         }
         if (listNodes.get(operatorIndex + 1).getTypeToken().equals("Brace block"))
             return newName;
@@ -335,17 +359,14 @@ public class Parser {
         int flagStatic = 0;
         if(listNodes.get(operatorIndex).getTypeToken().equals("ModifierStatic"))
             flagStatic = 1;
-        if(Arrays.asList(dataType).contains(listNodes.get(operatorIndex + flagStatic).getTypeToken()))
+        if(listNodes.get(operatorIndex + flagStatic).getTypeToken().equals("Typed id"))
             checkFlag++;
-        if(listNodes.get(operatorIndex + 1 + flagStatic).getTypeToken().equals("Id"))
+        if(listNodes.get(operatorIndex + 1 + flagStatic).getTypeToken().equals("Brace block function") ||
+                listNodes.get(operatorIndex + 1 + flagStatic).getTypeToken().equals("Brace block"))
             checkFlag++;
-        if(listNodes.size() > operatorIndex + 2 + flagStatic)
-            if(listNodes.get(operatorIndex + 2 + flagStatic).getTypeToken().equals("Brace block"))
-                checkFlag++;
-        if(checkFlag == 3)
-            node_fusion(listNodes, operatorIndex - 1, operatorIndex + checkFlag - 1 + flagStatic,
+        if(checkFlag == 2)
+            node_fusion(listNodes, operatorIndex - 1, operatorIndex - 1 + checkFlag + flagStatic,
                     "Function declaration");
-
     }
 
     public static boolean check_class_declarations(int operatorIndex, List<AST> listNodes) {
@@ -382,15 +403,19 @@ public class Parser {
     }
 
     public static String check_variable_creation(int operatorIndex, List<AST> listNodes) {
-
-        if(operatorIndex + 1 < listNodes.size()) {
+       if(operatorIndex + 1 < listNodes.size()) {
             if (listNodes.get(operatorIndex).getTypeToken().equals("Id")) {
                 if (listNodes.get(operatorIndex + 1).getTypeToken().equals("Semicolon")) {
                     return "Var creat fin";
                 }
-                else if(Arrays.asList(assignmentOperations).contains(listNodes.get(operatorIndex + 1).getTypeToken())) {
-                    if (operatorIndex + 4 < listNodes.size())
-                        return "Typed id";
+                else if(Arrays.asList(assignmentOperations).contains(listNodes.get(operatorIndex + 1).getTypeToken())){
+                    return "";
+                }
+                else  if(listNodes.get(operatorIndex + 1).getTypeToken().equals("Comma")) {
+                    if (operatorIndex + 2 < listNodes.size()) {
+                        if (Arrays.asList(dataType).contains(listNodes.get(operatorIndex + 2).getTypeToken()))
+                            return "Typed id";
+                    }
                     return "";
                 }
                 else
@@ -407,7 +432,7 @@ public class Parser {
         if (listNodes.get(operatorIndex).getTypeToken().equals("Assign operation with comma"))
             return "Creat and assign with comma";
         if( (listNodes.get(operatorIndex).getTypeToken().equals("Assign operation"))
-        || ( listNodes.get(operatorIndex).getTypeToken().equals("Assign call func")) )
+                || ( listNodes.get(operatorIndex).getTypeToken().equals("Assign call func")) )
             return "Creat and assign";
         return "";
     }
@@ -448,6 +473,20 @@ public class Parser {
     public static void add_to_the_list_of_nodes(List<AST> listNodes, Token token) {
         AST nodeAST = new AST(token.getToken(), token.getTypeToken(), token.getStr(), token.getCol(), null, new ArrayList<>());
         listNodes.add(nodeAST);
+    }
+
+    public static void add_to_node(List<AST> listNodes, int startingIndex, int endIndex, String tokenTypeNewName) {
+        int i;
+        for(i = startingIndex + 1; i <= endIndex; i++) {
+            AST node = new AST(listNodes.get(i));
+            listNodes.get(startingIndex).add_children(node);
+            listNodes.remove(i);
+            endIndex--;
+            i--;
+        }
+        listNodes.get(startingIndex).setTypeToken(tokenTypeNewName);
+        listNodes.get(startingIndex).setToken(tokenTypeNewName);
+        node_list_analysis(listNodes);
     }
 
     public static void check_error(List<AST> list) {
@@ -543,6 +582,7 @@ public class Parser {
                 add_error(list.get(i), "After expected block '(...)' or block '(...)' with error", 1);
             continue;
             }
+            else if(!Arrays.asList(finished).contains(list.get(i).getTypeToken()) && !list.get(i).getTypeToken().equals("Block class"))
             add_error(list.get(i), "Not part of the design", -1);
         }
     }
@@ -551,7 +591,7 @@ public class Parser {
         AST procNode;
         if(rightRec == -1) {
             String errorToken = "PARSER: <" + node.getRow() + " : " + node.getCol() + " '" + node.getToken() + "'> ";
-            errors.add(errorToken + error);
+            errorsParser.add(errorToken + error);
             return;
         }
         if(!node.getChildren().isEmpty()) {
@@ -561,7 +601,7 @@ public class Parser {
                     add_error(procNode.getChildren().get(procNode.getChildren().size() - 1), error, rightRec);
                 } else {
                     String errorToken = "PARSER: <" + procNode.getRow() + " : " + procNode.getCol() + " '" + procNode.getToken() + "'> ";
-                    errors.add(errorToken + error);
+                    errorsParser.add(errorToken + error);
                 }
             } else {
                 procNode = node.getChildren().get(0);
@@ -569,19 +609,19 @@ public class Parser {
                     add_error(procNode.getChildren().get(0), error, rightRec);
                 } else {
                     String errorToken = "PARSER: <" + procNode.getRow() + " : " + procNode.getCol() + " '" + procNode.getToken() + "'> ";
-                    errors.add(errorToken + error);
+                    errorsParser.add(errorToken + error);
                 }
             }
         }
         else {
             String errorToken = "PARSER: <" + node.getRow() + " : " + node.getCol() + " '" + node.getToken() + "'> ";
-            errors.add(errorToken + error);
+            errorsParser.add(errorToken + error);
         }
     }
 
     public static void print_error() {
-        if (!errors.isEmpty()) {
-            for (String error : errors) {
+        if (!errorsParser.isEmpty()) {
+            for (String error : errorsParser) {
                 System.out.println(error);
             }
         }
@@ -589,7 +629,7 @@ public class Parser {
     }
 
     public static List<String> getErrors() {
-        return errors;
+        return errorsParser;
     }
 
     public static AST get_node(List<AST> list, int index) {
