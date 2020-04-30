@@ -35,6 +35,12 @@ public class AST {
         this.typeToken = typeToken;
     }
 
+    public AST(String token, String typeToken, List<AST> children){
+        this.token = token;
+        this.typeToken = typeToken;
+        this.children = children;
+    }
+
     public AST() { }
 
     public void add_children(AST child) {

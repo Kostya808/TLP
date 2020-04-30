@@ -20,10 +20,10 @@ public class Program
                 }
             }
         }
-        print_message("Добро пожаловать в  C#!", s, d, 1, 2, 3, 2.0);
+        print_message("Добро пожаловать в  C#!");
     }
 
-    public void print_message(string Out, int s, int d) {
+    public void print_message(string Out) {
         Console.WriteLine(Out);
     }
 }

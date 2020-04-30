@@ -23,11 +23,12 @@ public class Compiler {
 
         Parser.check_error(listNodes);
 
-        for (AST s : listNodes) { AST.print_tree(s, 4, 100); }
         SemanticAnalysis.analysis(listNodes, "Level", 0);
 
 //        SemanticAnalysis.print_table();
-        SemanticAnalysis.print_declared_func();
+//        SemanticAnalysis.print_declared_func();
+
+        for (AST s : listNodes) { AST.print_tree(s, 4, 100); }
 
         Parser.print_error();
         SemanticAnalysis.print_error();

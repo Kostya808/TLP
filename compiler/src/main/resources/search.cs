@@ -6,12 +6,8 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        string stroka = "abcdef";
-        string podstroka = "bcd";
-        int count = 0;
-        int i;
-        int j = 0;
-
+        string stroka = "abcdef", podstroka = "bcd";
+        int count = 0, i, j = 0;
         for(i = 0; i < stroka.Length && j < podstroka.Length; i++) {
             if(podstroka[j] == stroka[i]) {
                 j++;

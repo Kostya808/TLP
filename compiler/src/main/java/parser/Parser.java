@@ -226,8 +226,6 @@ public class Parser {
                         if(Arrays.asList(passedArguments).contains(node))
                             checkFlag++;
                     }
-                    int d = endInd - startInd - 1;
-                    System.out.println(checkFlag + "  " + d);
                     if(endInd - startInd - 1 == checkFlag)
                         return "Brace block call function";
                 }

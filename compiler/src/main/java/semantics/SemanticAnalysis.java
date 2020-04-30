@@ -11,6 +11,7 @@ public class SemanticAnalysis {
     private static List<String> errorsSem = new ArrayList<>();
     private static HashMap<String, List<DeclaredVar>> declaredFunc = new HashMap<>();
     private static List<AST> rawNodes = new ArrayList<AST>();
+    private static List<String> scopeRawNodes = new ArrayList<String>();
 
     public static void analysis(List<AST> listNodes, String scope, int level) {
         int scopeCount = 1;
@@ -93,22 +94,23 @@ public class SemanticAnalysis {
                     break;
                 case ("Call func fin"):
                     rawNodes.add(node);
+                    scopeRawNodes.add(scope);
                     break;
             }
         }
         if(!rawNodes.isEmpty() && scope.equals("Level")) {
-            for (AST node : rawNodes) {
-                switch (node.getTypeToken()) {
+                for(int i = 0; i < rawNodes.size(); i++) {
+                switch (rawNodes.get(i).getTypeToken()) {
                     case ("Call func fin"):
-                        function_call_processing(node.getChildren().get(0).getChildren());
+                        function_call_processing(rawNodes.get(i).getChildren().get(0).getChildren(), scopeRawNodes.get(i));
                         break;
                 }
             }
         }
     }
 
-    public static void function_call_processing(List<AST> list) {
-        String funcNameCall = list.get(0).getToken();
+    public static void function_call_processing(List<AST> list, String scope) {
+        String funcNameCall = list.get(0).getToken(), dataTypePassedVar = "";
         if(declaredFunc.containsKey(funcNameCall)) {
             List <DeclaredVar> listDeclaredVar = declaredFunc.get(funcNameCall);
             List<AST> listPassedVar = list.get(1).getChildren();
@@ -117,28 +119,90 @@ public class SemanticAnalysis {
                 add_error(list.get(1), "The number of function arguments passed and received is different", null);
                 return;
             }
-
+            int countElemDeclaredVar = 0;
             for(AST passedVar : listPassedVar) {
+                if("Enum numb".equals(passedVar.getTypeToken()) || "Enum var".equals(passedVar.getTypeToken()))
+                    passedVar = passedVar.getChildren().get(0);
                 switch (passedVar.getTypeToken()) {
                     case ("LParen"):
                     case ("RParen"):
                         continue;
                     case ("Id"):
+                        dataTypePassedVar = scope_contains_var(scope, passedVar);
                         break;
                     case "StringLiteral":
                     case "DecimalInteger":
                     case "NotAnInteger":
-//                        data_type_def(passedVar.getTypeToken());
+                        dataTypePassedVar = data_type_def(passedVar.getTypeToken());
+                        break;
                 }
+                if(!dataTypePassedVar.equals("")) {
+                    type_check_passed_var(passedVar, dataTypePassedVar, listDeclaredVar.get(countElemDeclaredVar).getType());
+                }
+                countElemDeclaredVar++;
             }
         } else {
-            add_error(list.get(0), "No function declared", null);
-            System.out.println();
+            if(funcNameCall.equals("Console.WriteLine") || funcNameCall.equals("Console.Write")) {
+                List<AST> listPassedVar = list.get(1).getChildren();
+                if(listPassedVar.size() - 2 > 1) {
+                    add_error(list.get(1), "Function 'Console.WriteLine' takes a string as input", null);
+                    return;
+                } else if (listPassedVar.size() - 2 == 1) {
+                    String typePassedVar = listPassedVar.get(1).getTypeToken();
+                    if ("Id".equals(typePassedVar)) {
+                        scope_contains_var(scope, listPassedVar.get(1));
+                    } else if("Arithmetic expression".equals(typePassedVar)) {
+                        add_error(listPassedVar.get(1), "Function 'Console.WriteLine' takes a string as input", null);
+                    }
+                }
+            }
+            else if(funcNameCall.equals("Console.ReadLine")) {
+                if(!list.get(1).getTypeToken().equals("Brace block"))
+                    add_error(list.get(1), "After 'Console.ReadLine' expected '( )'", null);
+            }
+            else
+                add_error(list.get(0), "No function declared", null);
         }
     }
 
-    public static void type_check_passed_var(AST node, String type1, String type2) {
-
+    public static boolean type_check_passed_var(AST node, String typePassed, String typeTake) {
+        switch (typePassed) {
+            case ("double"):
+                switch (typeTake) {
+                    case ("int"):
+                        type_conversion("DecimalInteger", node);
+                        return true;
+                    case ("double"):
+                        return true;
+                    case ("string"):
+                        add_error(node, "Sent and received data types are different", null);
+                        return false;
+                }
+                break;
+            case ("int"):
+                switch (typeTake) {
+                    case ("int"):
+                        return true;
+                    case ("double"):
+                        type_conversion("NotAnInteger", node);
+                        return true;
+                    case ("string"):
+                        add_error(node, "Sent and received data types are different", null);
+                        return false;
+                }
+                break;
+            case ("string"):
+                switch (typeTake) {
+                    case ("int"):
+                    case ("double"):
+                        add_error(node, "Sent and received data types are different", null);
+                        return false;
+                    case ("string"):
+                        return true;
+                }
+                break;
+        }
+        return false;
     }
 
     public static boolean check_assign_op(List<AST> listNodes, String scope) {
