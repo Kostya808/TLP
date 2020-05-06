@@ -1,9 +1,11 @@
 .data
 
 str_1:
-		.string "Hello, world!\n"
+		.string "%d\n"
+
 
 .bss
+
 
 .text
 
@@ -11,8 +13,10 @@ str_1:
 .type  main, @function
 
 main:
+		pushl	a_1
 		pushl	$str_1
 		call	printf
-		addl	$4, %esp
+		addl	$8, %esp
+
 
 

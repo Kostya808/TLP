@@ -33,7 +33,8 @@ public class Program
 {
     public static void Main() 
     {
-        int i, a = 15, c;
-        Console.Write("Hello, world!\n");
+        int a = 1 + 2;
+        Console.Write(a);
+        // Console.Write("Hello, world!\n");
     }
 }

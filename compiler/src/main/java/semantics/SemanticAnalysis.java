@@ -516,6 +516,8 @@ public class SemanticAnalysis {
         }
         return name;
     }
-
+    public static HashMap<String, List<ScopeVar>> getTable() {
+        return table;
+    }
 
 }
