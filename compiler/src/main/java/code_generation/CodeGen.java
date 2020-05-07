@@ -61,8 +61,14 @@ public class CodeGen {
                     }
                     else {
                         List <AST> exprPriority = prioritizing_arithmetic_expressions(value.getChildren());
+                        String nameReg = get_free_register_name();
                         for (AST s : exprPriority) { AST.print_tree(s, 4, 100); }
-                        generatedCode = arithmetic_expression_processing(exprPriority, get_free_register_name());
+                        generatedCode = asm_variable_declaration_generation(type, "", variable.getChildren().get(0));
+                        blockBss.addAll(generatedCode);
+                        generatedCode = arithmetic_expression_processing(exprPriority.get(0), nameReg, type);
+                        blockText.addAll(generatedCode);
+                        blockText.add("\t\tmov" + dimension(type) + "\t%" + nameReg + ", " + lastCreatedVariable + "\n");
+                        register_exemption(nameReg);
                     }
                     break;
                 case ("Id"):
@@ -73,45 +79,194 @@ public class CodeGen {
         }
     }
 
-    public static List<String> arithmetic_expression_processing (List<AST> listNodes, String nameReg) {
+    public static List<String> arithmetic_expression_processing (AST expr, String nameReg, String dataType) {
         List<String> generatedCode = new ArrayList<>();
         AST leftOperand, rightOperand, operator;
-        leftOperand = listNodes.get(0).getChildren().get(0);
-        rightOperand = listNodes.get(0).getChildren().get(2);
-        operator = listNodes.get(0).getChildren().get(1);
+        leftOperand = expr.getChildren().get(0);
+        rightOperand = expr.getChildren().get(2);
+        operator = expr.getChildren().get(1);
 
-        if(!leftOperand.getChildren().isEmpty()) {
+        if(!leftOperand.getChildren().isEmpty() && !rightOperand.getChildren().isEmpty()) {
+            List<String> bufGeneratedCode = arithmetic_expression_processing(leftOperand, nameReg, dataType);
+            generatedCode.addAll(bufGeneratedCode);
 
+            String nameReg2 = get_free_register_name();
+
+            bufGeneratedCode = arithmetic_expression_processing(rightOperand, nameReg2, dataType);
+            generatedCode.addAll(bufGeneratedCode);
+
+//            for (String s : generatedCode) { System.out.println(s);}
+//            System.out.println();
+
+            leftOperand.setToken(nameReg);
+            leftOperand.setTypeToken("reg");
+            rightOperand.setToken(nameReg2);
+            rightOperand.setTypeToken("reg");
+
+            arithmetic_operation_processing(leftOperand, operator, rightOperand, generatedCode, dataType, nameReg);
+
+//            for (String s : generatedCode) { System.out.println(s);}
+//            System.out.println();
+
+            register_exemption(nameReg2);
+        } else if(!leftOperand.getChildren().isEmpty()) {
+            generatedCode = arithmetic_expression_processing(leftOperand, nameReg, dataType);
+            arithmetic_operation_processing(null, operator, rightOperand, generatedCode, dataType, nameReg);
         } else if(!rightOperand.getChildren().isEmpty()) {
-
+            generatedCode = arithmetic_expression_processing(rightOperand, nameReg, dataType);
+            arithmetic_operation_processing(leftOperand, operator, null, generatedCode, dataType, nameReg);
         } else {
-
+            generatedCode = arithmetic_operation_processing(leftOperand, operator, rightOperand, generatedCode, dataType, nameReg);
         }
 
         return generatedCode;
     }
 
     public static List<String> arithmetic_operation_processing (AST operand1, AST operator, AST operand2,
-                                                                                List<String> generatedCode) {
-        List<String> generatedCodeOperation = new ArrayList<>(generatedCode);
-        switch (operator.getToken()) {
-            case ("+"):
-                if(operand1.getTypeToken().equals("Id")) {
-
-                } else {
-
-                }
-                break;
-            case ("-"):
-                break;
-            case ("*"):
-                break;
-            case ("/"):
-                break;
-            case ("%"):
-                break;
+                                                    List<String> generatedCode, String dataType, String nameReg) {
+        String comment = generatedCommentExpr(operand1, operator, operand2);
+        if(operand1 != null && operand2 != null) {
+            switch (operator.getToken()) {
+                case ("+"):
+                    generatedCode.add("\t\tmov" + dimension(dataType) + "\t" + generatedOperand(operand1) +
+                            ", %" + nameReg + comment);
+                    generatedCode.add("\t\tadd" + dimension(dataType) + "\t" + generatedOperand(operand2) +
+                            ", %" + nameReg);
+                    break;
+                case ("-"):
+                    generatedCode.add("\t\tmov" + dimension(dataType) + "\t" + generatedOperand(operand1) +
+                            ", %" + nameReg + comment);
+                    generatedCode.add("\t\tsub" + dimension(dataType) + "\t" + generatedOperand(operand2) +
+                            ", %" + nameReg);
+                    break;
+                case ("*"):
+                    String nameReg2 = get_free_register_name();
+                    if(!nameReg.equals("eax")) {
+                        String nameReg3 = get_free_register_name();
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t%eax" + ", %" + nameReg2 + comment);
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t" + generatedOperand(operand1) + ", %eax");
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t" + generatedOperand(operand2) + ", %" + nameReg3);
+                        generatedCode.add("\t\tmul" + dimension(dataType) + "\t%" + nameReg3);
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t%eax" + ", %" + nameReg);
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t%" + nameReg2 + ", %eax");
+                        register_exemption(nameReg2);
+                        register_exemption(nameReg3);
+                    } else {
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t" + generatedOperand(operand1) + ", %" + nameReg + comment);
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t" + generatedOperand(operand2) + ", %" + nameReg2);
+                        generatedCode.add("\t\tmul" + dimension(dataType) + "\t%" + nameReg2);
+                        register_exemption(nameReg2);
+                    }
+                    break;
+                case ("/"):
+                    break;
+                case ("%"):
+                    break;
+            }
+        } else if(operand1 == null) {
+            switch (operator.getToken()) {
+                case ("+"):
+                    generatedCode.add("\t\tadd" + dimension(dataType) + "\t" + generatedOperand(operand2) +
+                            ", %" + nameReg + comment);
+                    break;
+                case ("-"):
+                    generatedCode.add("\t\tsub" + dimension(dataType) + "\t" + generatedOperand(operand2) +
+                            ", %" + nameReg + comment);
+                    break;
+                case ("*"):
+                    String nameReg2 = get_free_register_name();
+                    if(!nameReg.equals("eax")) {
+                        String nameReg3 = get_free_register_name();
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t%eax" + ", %" + nameReg2 + comment);
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t%" + nameReg + ", %eax");
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t" + generatedOperand(operand2) + ", %" + nameReg3);
+                        generatedCode.add("\t\tmul" + dimension(dataType) + "\t%" + nameReg3);
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t%eax" + ", %" + nameReg);
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t%" + nameReg2 + ", %eax");
+                        register_exemption(nameReg2);
+                        register_exemption(nameReg3);
+                    } else {
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t" + generatedOperand(operand2) + ", %" + nameReg2 + comment);
+                        generatedCode.add("\t\tmul" + dimension(dataType) + "\t%" + nameReg2);
+                        register_exemption(nameReg2);
+                    }
+                    break;
+                case ("/"):
+                    break;
+                case ("%"):
+                    break;
+            }
+        } else {
+            switch (operator.getToken()) {
+                case ("+"):
+                    generatedCode.add("\t\tadd" + dimension(dataType) + "\t" + generatedOperand(operand1) +
+                            ", %" + nameReg + comment);
+                    break;
+                case ("-"):
+                    generatedCode.add("\t\tsub" + dimension(dataType) + "\t" + generatedOperand(operand1) +
+                            ", %" + nameReg + comment);
+                    break;
+                case ("*"):
+                    String nameReg2 = get_free_register_name();
+                    if(!nameReg.equals("eax")) {
+                        String nameReg3 = get_free_register_name();
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t%eax" + ", %" + nameReg2 + comment);
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t%" + nameReg + ", %eax");
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t" + generatedOperand(operand1) + ", %" + nameReg3);
+                        generatedCode.add("\t\tmul" + dimension(dataType) + "\t%" + nameReg3);
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t%eax" + ", %" + nameReg);
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t%" + nameReg2 + ", %eax");
+                        register_exemption(nameReg2);
+                        register_exemption(nameReg3);
+                    } else {
+                        generatedCode.add("\t\tmov" + dimension(dataType) + "\t" + generatedOperand(operand1) + ", %" + nameReg2 + comment);
+                        generatedCode.add("\t\tmul" + dimension(dataType) + "\t%" + nameReg2);
+                        register_exemption(nameReg2);
+                    }
+                    break;
+                case ("/"):
+                    break;
+                case ("%"):
+                    break;
+            }
         }
         return generatedCode;
+    }
+
+    public static String generatedCommentExpr (AST operand1, AST operator, AST operand2) {
+        String operandToken1, operandToken2;
+        if(operand1 == null) {
+            operandToken1 = "$";
+        } else {
+            operandToken1 = operand1.getToken();
+        }
+        if(operand2 == null) {
+            operandToken2 = "$";
+        } else {
+            operandToken2 = operand2.getToken();
+        }
+        return "\t# " + operandToken1 + " " + operator.getToken() + " " + operandToken2;
+    }
+
+    public static String generatedOperand (AST operand) {
+        if(operand.getTypeToken().equals("reg")) {
+            return "%" + operand.getToken();
+        } else if(operand.getTypeToken().equals("Id")) {
+            return operand.getToken() +"_1";
+        } else {
+            return "$" + operand.getToken();
+        }
+    }
+
+    public  static String dimension (String dataType) {
+        switch (dataType) {
+            case ("int"):
+                return "l";
+            case ("double"):
+                return "q";
+            default:
+                return "l";
+        }
     }
 
     public static void function_call_processing (List<AST> listNodes) {
@@ -311,9 +466,19 @@ public class CodeGen {
     public  static String get_free_register_name () {
         for(Register reg : listRegisters) {
             if(!reg.isEmployment()) {
+                reg.setEmployment(true);
                 return reg.getName();
             }
         }
         return "Non";
     }
+
+    public  static void register_exemption (String nameReg) {
+        for(Register reg : listRegisters) {
+            if(reg.getName().equals(nameReg)) {
+                reg.setEmployment(false);
+            }
+        }
+    }
+
 }
