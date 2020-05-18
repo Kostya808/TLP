@@ -141,10 +141,10 @@ public class Lexer {
         String newStr = line;
         String[] ArrayPattern = new String[] {"\\(", "\\)", "\\[", "]", "\\{", "}", "\\*", "/", ";", ":",
         ",", "%", "-", "\\+", "=", "-=",  "\\+=", "-\\s\\s-", "\\+\\s\\s\\+", "=\\s\\s=", "<", ">", "<\\s\\s=", ">\\s\\s=",
-        "!\\s=", " \\*\\s\\s=", "/\\s\\s="};
+        "!\\s=", " \\*\\s\\s=", "/\\s\\s=", "\t"};
         String[] ArrayReplaceable = new String[] {" ( ", " ) ", " [ ", " ] ", " { ", " } ", " * ", " / ",  " ; ", " : ",
         " , ", " % ", " - ", " + ", " = ", " -= ", " += ", " -- ", " ++ ", " == ", " < ", " > ", " <= ", " >= ",
-        " != ", " *= ", " /= "};
+        " != ", " *= ", " /= ", " "};
         for(int i = 0; i < ArrayPattern.length; i++) {
             Pattern pattern = Pattern.compile(ArrayPattern[i]);
             Matcher matcher = pattern.matcher(newStr);

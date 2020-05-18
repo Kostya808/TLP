@@ -8,7 +8,7 @@ public class Program
     {
         string stroka = "abcdef", podstroka = "bcd";
         int count = 0, i, j = 0;
-        for(i = 0; i < stroka.Length && j < podstroka.Length; i++) {
+        for(i = 0; i < stroka.Length; i++) {
             if(podstroka[j] == stroka[i]) {
                 j++;
                 count++;
@@ -17,11 +17,11 @@ public class Program
                 j = 0;
                 count = 0;
             }
+            if(count == podstroka.Length) {
+                Console.Write("Является подстрокой!");
+                i = stroka.Length;
+            }
         }
-        if(count == podstroka.Length) {
-            Console.Write("Является подстрокой!");
-        }
-
     }
 }
 // }

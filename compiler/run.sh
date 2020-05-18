@@ -1,4 +1,4 @@
  #!/bin/bush
 
-gcc -m32 -o output output.s
+gcc -no-pie -o output output.s
 ./output

@@ -422,6 +422,8 @@ public class SemanticAnalysis {
                 return node;
             if(node.getTypeToken().equals("Assign operation"))
                 return name_definition(node.getChildren());
+            if(node.getTypeToken().equals("Assign call func"))
+                return name_definition(node.getChildren());
         }
         return null;
     }
