@@ -1,21 +1,19 @@
-// using System;
-
-// namespace LoopTasks
-// {
 public class Program
 {
-    public static void Main(string[] args)
+    public static void Main()
     {
-        int NumbersCount = 100;
-        int[] numbers = new int[NumbersCount];
+        int[] numbers = new int[5];
 
-        for (int i = 0; i < NumbersCount; i++)
-            numbers[i] = i + 1;
-
+        for (int i = 0; i < numbers.Length; i++) {
+            Console.Write("Введите ");
+            Console.Write(i);
+            Console.Write(" элемент массива: ");
+            numbers[i] = Console.ReadLine();
+        }
         int min = numbers[0];
         int minIndex = 0;
         
-        for (int i = 0; i < NumbersCount; i++)
+        for (int i = 0; i < numbers.Length; i++)
         {
             if (min > numbers[i])
             {
@@ -23,8 +21,7 @@ public class Program
                 minIndex = i;
             }
         }
-        Console.Write(numbers[minIndex]);
-        double a = 2 + numbers[2] * numbers[1];
+        Console.Write("Минимальный элемент массива: ");
+        Console.WriteLine(numbers[minIndex]);
     }
 }
-// }

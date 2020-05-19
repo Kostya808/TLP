@@ -15,7 +15,6 @@ public class CodeGen {
     private static List<String> createdVar = new ArrayList<>();
     private static HashMap<String, String> stringForFunction = new HashMap<>();
     private static List<Register> listRegisters = new ArrayList<>();
-    private static String lastCreatedVariable = "non";
     private static int conditionalJumpCount = 0;
 
     public static void analysis(List<AST> listNodes) {
@@ -54,11 +53,27 @@ public class CodeGen {
                 case ("Crement"):
                     crement_processing(node.getChildren());
                     break;
+                case ("Assign call func"):
                 case ("Assign operation"):
                     assign_processing(node, get_type_var(node.getChildren().get(0)));
                     break;
+                case ("Memory assign"):
+                    memory_assign_processing(node.getChildren());
+                    break;
             }
         }
+    }
+
+    public static void memory_assign_processing(List<AST> listNodes) {
+//        AST dataType = listNodes.get(0).getChildren().get(0);
+        AST nameArray = listNodes.get(0).getChildren().get(2);
+        AST amountElements = listNodes.get(2).getChildren().get(2).getChildren().get(1);
+        AST buf = new AST(nameArray);
+        int size = 4 * Integer.parseInt(amountElements.getToken());
+        blockBss.add("\n" + nameArray.getToken() + ":");
+        blockBss.add("\t\t.space " + size);
+        buf.setToken(buf.getToken() + ".Length");
+        blockData.addAll(asm_variable_declaration_generation("int", amountElements.getToken(), buf));
     }
 
     public static void crement_processing(List<AST> listNodes) {
@@ -195,29 +210,38 @@ public class CodeGen {
 
     public static void assign_processing(AST node, String type) {
 //        for (AST s : node.getChildren()) { AST.print_tree(s, 4, 100); }
+//        System.out.println();
         AST variable = node.getChildren().get(0);
         AST value = node.getChildren().get(2);
-        if("Id".equals(value.getTypeToken())) {
+        if("Id".equals(value.getTypeToken()) || "Array element".equals(value.getTypeToken())) {
             String regBuf = get_free_register_name();
-            if (checkDeclaredVar(variable.getToken()))
+            if (checkDeclaredVar(variable.getToken()) && !"Array element".equals(variable.getToken())) {
                 blockBss.addAll(asm_variable_declaration_generation(type, "", variable));
+            }
             blockText.add("\t\tmov" + dimension(type) + " \t" + generatedOperand(value) + ", %" + regBuf);
-            blockText.add("\t\tmov" + dimension(type) + " \t%" + regBuf + ", " + lastCreatedVariable + "\n");
+            blockText.add("\t\tmov" + dimension(type) + " \t%" + regBuf + ", " + generatedOperand(variable) + "\n");
             register_exemption(regBuf);
+        } else if("Call func".equals(value.getTypeToken())) {
+            blockText.add("\t\tmov $" + get_string_for_function("\"%d\"") + ", %rdi\t# scanf");
+            if (checkDeclaredVar(variable.getToken()) && !"Array element".equals(variable.getToken())) {
+                blockBss.addAll(asm_variable_declaration_generation(type, "", variable));
+            }
+            blockText.add("\t\tleaq " + generatedOperand(variable) + ", %rsi");
+            blockText.add("\t\tcall scanf\n");
         } else if(!"Arithmetic expression".equals(value.getToken())) {
-            if (checkDeclaredVar(variable.getToken())) {
+            if (checkDeclaredVar(variable.getToken()) && !"Array element".equals(variable.getToken())) {
                 blockData.addAll(asm_variable_declaration_generation(type, value.getToken(), variable));
             } else {
-                blockText.add("\t\tmov" + dimension(type) + " \t" + generatedOperand(value) + ", " + lastCreatedVariable + "\n");
+                blockText.add("\t\tmov" + dimension(type) + " \t" + generatedOperand(value) + ", " + generatedOperand(variable) + "\n");
             }
         } else {
             List <AST> exprPriority = prioritizing_arithmetic_expressions(value.getChildren());
             String nameReg = get_free_register_name();
-            if (checkDeclaredVar(variable.getToken())) {
+            if (checkDeclaredVar(variable.getToken())  && !"Array element".equals(variable.getToken())) {
                 blockBss.addAll(asm_variable_declaration_generation(type, "", variable));
             }
             blockText.addAll(arithmetic_expression_processing(exprPriority.get(0), nameReg, type));
-            blockText.add("\t\tmov" + dimension(type) + "\t%" + nameReg + ", " + lastCreatedVariable + "\n");
+            blockText.add("\t\tmov" + dimension(type) + "\t%" + nameReg + ", " + generatedOperand(variable) + "\n");
             register_exemption(nameReg);
         }
     }
@@ -236,11 +260,7 @@ public class CodeGen {
         for(AST variable : listNodes) {
             switch (variable.getTypeToken()) {
                 case ("Assign call func"):
-                    blockText.add("\t\tmov $" + get_string_for_function("\"%d\"") + ", %rdi\t# scanf");
-                    generatedCode = asm_variable_declaration_generation(type, "", variable.getChildren().get(0));
-                    blockBss.addAll(generatedCode);
-                    blockText.add("\t\tleaq " + lastCreatedVariable + ", %rsi");
-                    blockText.add("\t\tcall scanf\n");
+                    assign_processing(variable, type);
                     break;
                 case ("Enum var"):
                     generatedCode = asm_variable_declaration_generation(type, "", variable.getChildren().get(0));
@@ -464,12 +484,18 @@ public class CodeGen {
     }
 
     public static String generatedOperand (AST operand) {
-        if(operand.getTypeToken().equals("reg")) {
-            return "%" + operand.getToken();
-        } else if(operand.getTypeToken().equals("Id")) {
-            return operand.getToken();
-        } else {
-            return "$" + operand.getToken();
+        switch (operand.getTypeToken()) {
+            case "reg":
+                return "%" + operand.getToken();
+            case "Id":
+                return operand.getToken();
+            case "Array element":
+                AST index = operand.getChildren().get(1).getChildren().get(1);
+                String nameVar = operand.getChildren().get(0).getToken();
+                blockText.add("\t\tmovl \t" + generatedOperand(index) + ", %edx");
+                return nameVar + "(,%edx,4)";
+            default:
+                return "$" + operand.getToken();
         }
     }
 
@@ -493,9 +519,13 @@ public class CodeGen {
                         blockText.add("\t\tmov \t$" + get_string_for_function(argument.getToken()) + ", %rdi\t# " + nameFunction + " " + argument.getToken());
                         blockText.add("\t\tcall\tprintf \n");
                         break;
+                    case ("Array element"):
                     case ("Id"):
-                        blockText.add("\t\tmov\t$" + get_string_for_function("\"%d\\n\"") + ", %rdi\t# " + nameFunction + " " + argument.getToken());
-                        blockText.add("\t\tmov\t" + generatedOperand(argument) + ", %rsi");
+                        if("Console.WriteLine".equals(nameFunction))
+                            blockText.add("\t\tmov \t$" + get_string_for_function("\"%d\\n\"") + ", %rdi\t# " + nameFunction + " " + argument.getToken());
+                        else
+                            blockText.add("\t\tmov \t$" + get_string_for_function("\"%d\"") + ", %rdi\t# " + nameFunction + " " + argument.getToken());
+                        blockText.add("\t\tmov \t" + generatedOperand(argument) + ", %rsi");
                         blockText.add("\t\tcall\tprintf\n");
                         break;
                 }
@@ -524,7 +554,6 @@ public class CodeGen {
 
             case ("int"):
                 declaredVar = variable.getToken();
-                lastCreatedVariable = declaredVar;
                 generatedCodeDecl.add("\n" + declaredVar + ":");
                 if("".equals(value)) {
                     generatedCodeDecl.add("\t\t.space 4");
@@ -540,7 +569,6 @@ public class CodeGen {
         if(SemanticAnalysis.function_name_definition(listNodes).equalsIgnoreCase("main")) {
             blockText.add("\n.globl  main");
             blockText.add(".type  main, @function");
-            blockText.add("\nmain:");
             blockText.add("\nmain:");
             blockText.add("\t\tpushq %rbp");
             blockText.add("\t\tmovq %rsp, %rbp\n");
@@ -561,7 +589,7 @@ public class CodeGen {
     }
 
     public CodeGen() {
-        blockData.add(".data\n");
+        blockData.add(".data");
         blockBss.add(".bss");
         blockText.add(".text");
 

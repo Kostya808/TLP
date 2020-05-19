@@ -30,7 +30,7 @@ public class Parser {
     private static String[]unfinished = new String[] {"Call func", "Logical expression", "Crement", "Var creat", "Creat several var"};
     private static String[]finished = new String[] {"Crement fin", "Call func fin", "Block function", "Creat and assign", "Var creat fin",
                                             "Block for", "Block if", "Block else", "Block else if", "Assign operation", "Memory assign",
-                                            "Assign operation", "Creat several var fin"};
+                                            "Assign operation", "Creat several var fin", "Assign call func"};
 
     private static List<StorageBrace> storBr = new ArrayList<>();
     private static List<String> errorsParser = new ArrayList<>();

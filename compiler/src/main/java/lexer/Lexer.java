@@ -266,7 +266,7 @@ public class Lexer {
                 else if(Pattern.matches("[\\w&&[^\\d]]\\w*", line))
                     return "Id";
                 else if(Pattern.matches("[\\w&&[^\\d]][[.\\w]\\w]*", line))
-                    return "IdClassCall";
+                    return "Id";
                 else if(Pattern.matches("[\"].*[\"]", line))
                     return "StringLiteral";
                 else if(Pattern.matches("['].*[']", line))

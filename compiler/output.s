@@ -1,5 +1,4 @@
 .data
-
 str0:
 		.string "Введите а: "
 str1:
@@ -7,7 +6,7 @@ str1:
 str2:
 		.string "Введите b: "
 str3:
-		.string "Наименьший общий делитель: "
+		.string "Наибольший общий делитель: "
 str4:
 		.string "%d\n"
 
@@ -28,8 +27,6 @@ i:
 
 .globl  main
 .type  main, @function
-
-main:
 
 main:
 		pushq %rbp
@@ -74,11 +71,11 @@ condition_jump_2:
 		cmpl	%ebx, %eax
 		jne 	condition_jump_4
 
-		mov 	$str3, %rdi	# Console.WriteLine "Наименьший общий делитель: "
+		mov 	$str3, %rdi	# Console.WriteLine "Наибольший общий делитель: "
 		call	printf 
 
-		mov	$str4, %rdi	# Console.WriteLine i
-		mov	i, %rsi
+		mov 	$str4, %rdi	# Console.WriteLine i
+		mov 	i, %rsi
 		call	printf
 
 		movl 	$0, i
