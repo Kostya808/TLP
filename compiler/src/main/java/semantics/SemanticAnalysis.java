@@ -369,6 +369,9 @@ public class SemanticAnalysis {
             check_item_index(var.getChildren(), scope);
             return scope_contains_var(scope, var.getChildren().get(0));
         }
+        if(var.getToken().endsWith(".Length")) {
+            return "int";
+        }
         String nameVar = var.getToken();
         if (table.containsKey(nameVar)) {
             List<ScopeVar> listScopes = table.get(nameVar);

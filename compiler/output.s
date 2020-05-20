@@ -1,23 +1,27 @@
 .data
+
+stroka:
+		.string "abcdef"
+
+stroka.Length:
+		.int 6
+
+podstroka:
+		.string "bcd"
+
+podstroka.Length:
+		.int 3
+
+count:
+		.int 0
+
+j:
+		.int 0
 str0:
-		.string "Введите а: "
-str1:
-		.string "%d"
-str2:
-		.string "Введите b: "
-str3:
-		.string "Наибольший общий делитель: "
-str4:
-		.string "%d\n"
+		.string "Является подстрокой!\n"
 
 
 .bss
-
-a:
-		.space 4
-
-b:
-		.space 4
 
 i:
 		.space 4
@@ -32,64 +36,49 @@ main:
 		pushq %rbp
 		movq %rsp, %rbp
 
-		mov 	$str0, %rdi	# Console.WriteLine "Введите а: "
-		call	printf 
-
-		mov $str1, %rdi	# scanf
-		leaq a, %rsi
-		call scanf
-
-		mov 	$str2, %rdi	# Console.WriteLine "Введите b: "
-		call	printf 
-
-		mov $str1, %rdi	# scanf
-		leaq b, %rsi
-		call scanf
-
-		movl 	a, %eax
-		movl 	%eax, i
+		movl 	$0, i
 
 		jmp 	condition_jump_1
 condition_jump_2:
-		# if 	# Arithmetic expression == 0
-		movl	a, %eax	# a % i
-		movl	i, %ecx
-		xor 	%edx, %edx
-		divl	%ecx
-		movl	%edx, %eax
-		movl	$0, %ebx
-		cmpl	%ebx, %eax
+		# if 	# Array element == Array element
+		movl 	j, %edx
+		movb	podstroka(,%edx,1), %ah
+		movl 	i, %edx
+		movb	stroka(,%edx,1), %bh
+		cmpb	%bh, %ah
 		jne 	condition_jump_3
 
-		# if 	# Arithmetic expression == 0
-		movl	b, %eax	# b % i
-		movl	i, %ecx
-		xor 	%edx, %edx
-		divl	%ecx
-		movl	%edx, %eax
-		movl	$0, %ebx
-		cmpl	%ebx, %eax
-		jne 	condition_jump_4
+		incl	j
+		incl	count
+		jmp 	condition_jump_4
+condition_jump_3:
 
-		mov 	$str3, %rdi	# Console.WriteLine "Наибольший общий делитель: "
-		call	printf 
+		movl 	$0, j
 
-		mov 	$str4, %rdi	# Console.WriteLine i
-		mov 	i, %rsi
-		call	printf
-
-		movl 	$0, i
+		movl 	$0, count
 
 condition_jump_4:
 
-condition_jump_3:
+		# if 	# count == podstroka.Length
+		movl	count, %eax
+		movl	podstroka.Length, %ebx
+		cmpl	%ebx, %eax
+		jne 	condition_jump_5
 
-		decl	i
+		mov 	$str0, %rdi	# Console.Write "Является подстрокой!\n"
+		call	printf 
+
+		movl 	stroka.Length, %eax
+		movl 	%eax, i
+
+condition_jump_5:
+
+		incl	i
 condition_jump_1:
 		movl	i, %eax
-		movl	$0, %ebx
+		movl	stroka.Length, %ebx
 		cmpl	%ebx, %eax
-		jg 	condition_jump_2
+		jl 	condition_jump_2
 
 		movl	$0, %eax
 		leave

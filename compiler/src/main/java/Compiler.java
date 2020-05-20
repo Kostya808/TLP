@@ -16,7 +16,7 @@ public class Compiler {
         List<AST> listNodes = new ArrayList<AST>();
         Lexer lexer = new Lexer();
         if(args.length == 0) {
-            File file = new File(Objects.requireNonNull(Lexer.class.getClassLoader().getResource("nod.cs")).getFile());
+            File file = new File(Objects.requireNonNull(Lexer.class.getClassLoader().getResource("search.cs")).getFile());
             lexer.start(file, listNodes);
         }
         else {

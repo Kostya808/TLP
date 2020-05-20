@@ -23,13 +23,13 @@ public class Parser {
     private static String[]Brace = new String[] {"LBrace", "LParen", "LSquareBracket", "RBrace", "RParen", "RSquareBracket"};
     private static String[]crement = new String[] {"OperatorIncrement", "OperatorDecrement"};
     private static String[]logicalOperation = new String[]{"OperatorMore", "OperatorSmaller", "OperatorLessOrEqual", "OperatorMoreOrEqual",
-                                            "OperatorEq", "LogicalAnd", "LogicalOr"};
+                                            "OperatorEq", "LogicalAnd", "LogicalOr", "OperatorNotEq"};
     private static String[]design = new String[] {"KeywordFor", "KeywordElse", "KeywordIf", "IdClassCall", "Id"};
     private static String[]declaration = new String[] {"Class declaration", "Function declaration", "Declaration for",
                                             "Declaration if", "Declaration else if", "Declaration else"};
     private static String[]unfinished = new String[] {"Call func", "Logical expression", "Crement", "Var creat", "Creat several var"};
     private static String[]finished = new String[] {"Crement fin", "Call func fin", "Block function", "Creat and assign", "Var creat fin",
-                                            "Block for", "Block if", "Block else", "Block else if", "Assign operation", "Memory assign",
+                                            "Block for", "Block if", "Block else", "Block else if", "Block if else", "Assign operation", "Memory assign",
                                             "Assign operation", "Creat several var fin", "Assign call func"};
 
     private static List<StorageBrace> storBr = new ArrayList<>();
@@ -45,6 +45,10 @@ public class Parser {
                 if (Arrays.asList(numbers).contains(listNodes.get(i).getTypeToken())) {
                     if (listNodes.get(i + 1).getTypeToken().equals("Comma")) {
                             node_fusion(listNodes, i, i + 1, "Enum numb");
+                    }
+                } else if (listNodes.get(i).getTypeToken().equals("Block if")) {
+                    if (listNodes.get(i + 1).getTypeToken().equals("Block else")) {
+                        node_fusion(listNodes, i, i + 1, "Block if else");
                     }
                 }
                 else if (listNodes.get(i).getTypeToken().equals("Id")) {

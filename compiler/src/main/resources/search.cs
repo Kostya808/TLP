@@ -12,13 +12,15 @@ public class Program
             if(podstroka[j] == stroka[i]) {
                 j++;
                 count++;
+                // Console.WriteLine(stroka[i]);
             }
             else {
+            // Console.WriteLine(count);
                 j = 0;
                 count = 0;
             }
             if(count == podstroka.Length) {
-                Console.Write("Является подстрокой!");
+                Console.Write("Является подстрокой!\n");
                 i = stroka.Length;
             }
         }

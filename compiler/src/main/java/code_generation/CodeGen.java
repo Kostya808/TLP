@@ -39,6 +39,9 @@ public class CodeGen {
                 case ("Block for"):
                     block_for_processing(node.getChildren());
                     break;
+                case ("Block if else"):
+                    block_if_else_processing(node.getChildren());
+                    break;
                 case ("Block if"):
                     block_if_processing(node.getChildren());
                     break;
@@ -53,6 +56,9 @@ public class CodeGen {
                 case ("Crement"):
                     crement_processing(node.getChildren());
                     break;
+                case ("Crement fin"):
+                    crement_processing(node.getChildren().get(0).getChildren());
+                    break;
                 case ("Assign call func"):
                 case ("Assign operation"):
                     assign_processing(node, get_type_var(node.getChildren().get(0)));
@@ -62,6 +68,61 @@ public class CodeGen {
                     break;
             }
         }
+    }
+
+    public static void block_if_else_processing(List<AST> listNodes) {
+        AST blockIf = listNodes.get(0);
+        AST blockElse = listNodes.get(1);
+        List<AST> logicalExpr = get_logical_expr(blockIf.getChildren());
+        assert logicalExpr != null;
+        String nameConditionJump1 = get_name_condition_jump();
+        String nameConditionJump2 = get_name_condition_jump();
+        AST operand1 = logicalExpr.get(0);
+        AST operator = logicalExpr.get(1);
+        AST operand2 = logicalExpr.get(2);
+        String reg1 = get_free_register_name();
+        String reg2 = get_free_register_name();
+        String bufReg1 = reg1;
+        String bufReg2 = reg2;
+        String typeOperand = get_type_operand(operand1);
+        blockText.add("\t\t# if " + generatedCommentExpr(operand1, operator, operand2));
+
+        if(!typeOperand.equals("int")) {
+            reg1 = bufReg1.charAt(1) + "h";
+            reg2 = bufReg2.charAt(1) + "h";
+        }
+
+        register_value(operand1, reg1, typeOperand);
+        register_value(operand2, reg2, typeOperand);
+
+        blockText.add("\t\tcmp" + dimension(typeOperand) + "\t%" + reg2 + ", %" + reg1);
+        switch (logicalExpr.get(1).getToken()) {
+            case ("<"):
+                blockText.add("\t\tjnl \t" + nameConditionJump1 + "\n");
+                break;
+            case (">"):
+                blockText.add("\t\tjng \t" + nameConditionJump1 + "\n");
+                break;
+            case ("=="):
+                blockText.add("\t\tjne \t" + nameConditionJump1 + "\n");
+                break;
+            case ("!="):
+                blockText.add("\t\tje \t" + nameConditionJump1 + "\n");
+                break;
+        }
+        if(!typeOperand.equals("int")) {
+            reg1 = bufReg1;
+            reg2 = bufReg2;
+        }
+
+        register_exemption(reg1);
+        register_exemption(reg2);
+
+        analysis(blockIf.getChildren().get(1).getChildren());
+        blockText.add("\t\tjmp \t" + nameConditionJump2);
+        blockText.add(nameConditionJump1 + ":\n");
+        analysis(blockElse.getChildren().get(1).getChildren());
+        blockText.add(nameConditionJump2 + ":\n");
     }
 
     public static void memory_assign_processing(List<AST> listNodes) {
@@ -111,11 +172,12 @@ public class CodeGen {
         AST operand1 = logicalExpr.get(0);
         AST operator = logicalExpr.get(1);
         AST operand2 = logicalExpr.get(2);
+        String type = get_type_operand(operand1);
         String reg1 = get_free_register_name();
         String reg2 = get_free_register_name();
 
-        register_value(operand1, reg1);
-        register_value(operand2, reg2);
+        register_value(operand1, reg1, type);
+        register_value(operand2, reg2, type);
 
         blockText.add("\t\tcmpl\t%" + reg2 + ", %" + reg1);
         switch (operator.getToken()) {
@@ -136,14 +198,23 @@ public class CodeGen {
         register_exemption(reg2);
     }
 
-    public static void register_value(AST operand, String nameReg) {
+    public static void register_value(AST operand, String nameReg, String type) {
         switch (operand.getTypeToken()) {
             case ("Arithmetic expression"):
                 List <AST> exprPriority = prioritizing_arithmetic_expressions(operand.getChildren());
-                blockText.addAll(arithmetic_expression_processing(exprPriority.get(0), nameReg, "int"));
+                blockText.addAll(arithmetic_expression_processing(exprPriority.get(0), nameReg, type));
                 break;
             default:
-                blockText.add("\t\tmovl\t" + generatedOperand(operand) + ", %" + nameReg);
+                blockText.add("\t\tmov" + dimension(type) + "\t" + generatedOperand(operand) + ", %" + nameReg);
+        }
+    }
+
+    public static String get_type_operand(AST operand) {
+        switch (operand.getToken()) {
+            case ("Array element"):
+                return get_type_var(operand.getChildren().get(0));
+            default:
+                return "int";
         }
     }
 
@@ -156,13 +227,20 @@ public class CodeGen {
         AST operand2 = logicalExpr.get(2);
         String reg1 = get_free_register_name();
         String reg2 = get_free_register_name();
-
+        String bufReg1 = reg1;
+        String bufReg2 = reg2;
+        String typeOperand = get_type_operand(operand1);
         blockText.add("\t\t# if " + generatedCommentExpr(operand1, operator, operand2));
 
-        register_value(operand1, reg1);
-        register_value(operand2, reg2);
+        if(!typeOperand.equals("int")) {
+            reg1 = bufReg1.charAt(1) + "h";
+            reg2 = bufReg2.charAt(1) + "h";
+        }
 
-        blockText.add("\t\tcmpl\t%" + reg2 + ", %" + reg1);
+        register_value(operand1, reg1, typeOperand);
+        register_value(operand2, reg2, typeOperand);
+
+        blockText.add("\t\tcmp" + dimension(typeOperand) + "\t%" + reg2 + ", %" + reg1);
         switch (logicalExpr.get(1).getToken()) {
             case ("<"):
                 blockText.add("\t\tjnl \t" + nameConditionJump + "\n");
@@ -173,7 +251,15 @@ public class CodeGen {
             case ("=="):
                 blockText.add("\t\tjne \t" + nameConditionJump + "\n");
                 break;
+            case ("!="):
+                blockText.add("\t\tje \t" + nameConditionJump + "\n");
+                break;
         }
+        if(!typeOperand.equals("int")) {
+            reg1 = bufReg1;
+            reg2 = bufReg2;
+        }
+
         register_exemption(reg1);
         register_exemption(reg2);
 
@@ -221,6 +307,8 @@ public class CodeGen {
             blockText.add("\t\tmov" + dimension(type) + " \t" + generatedOperand(value) + ", %" + regBuf);
             blockText.add("\t\tmov" + dimension(type) + " \t%" + regBuf + ", " + generatedOperand(variable) + "\n");
             register_exemption(regBuf);
+        } else if("StringLiteral".equals(value.getTypeToken())) {
+            blockData.addAll(asm_variable_declaration_generation(type, value.getToken(), variable));
         } else if("Call func".equals(value.getTypeToken())) {
             blockText.add("\t\tmov $" + get_string_for_function("\"%d\"") + ", %rdi\t# scanf");
             if (checkDeclaredVar(variable.getToken()) && !"Array element".equals(variable.getToken())) {
@@ -255,24 +343,19 @@ public class CodeGen {
     }
 
     public static void var_creat_processing (List<AST> listNodes) {
-        List <String> generatedCode;
         String type = listNodes.get(0).getToken();
         for(AST variable : listNodes) {
             switch (variable.getTypeToken()) {
                 case ("Assign call func"):
-                    assign_processing(variable, type);
-                    break;
-                case ("Enum var"):
-                    generatedCode = asm_variable_declaration_generation(type, "", variable.getChildren().get(0));
-                    blockBss.addAll(generatedCode);
-                    break;
                 case ("Assign operation with comma"):
                 case ("Assign operation"):
                     assign_processing(variable, type);
                     break;
+                case ("Enum var"):
+                    blockBss.addAll(asm_variable_declaration_generation(type, "", variable.getChildren().get(0)));
+                    break;
                 case ("Id"):
-                    generatedCode = asm_variable_declaration_generation(type, "", variable);
-                    blockBss.addAll(generatedCode);
+                    blockBss.addAll(asm_variable_declaration_generation(type, "", variable));
                     break;
             }
         }
@@ -493,15 +576,28 @@ public class CodeGen {
                 AST index = operand.getChildren().get(1).getChildren().get(1);
                 String nameVar = operand.getChildren().get(0).getToken();
                 blockText.add("\t\tmovl \t" + generatedOperand(index) + ", %edx");
-                return nameVar + "(,%edx,4)";
+                return nameVar + "(,%edx," + get_size_type(get_type_var(operand.getChildren().get(0))) + ")";
             default:
                 return "$" + operand.getToken();
+        }
+    }
+
+    public static String get_size_type(String type) {
+        switch (type) {
+            case ("double"):
+                return "8";
+            case ("string"):
+                return "1";
+            default:
+                return "4";
         }
     }
 
     public  static String dimension (String dataType) {
         if ("double".equals(dataType)) {
             return "q";
+        } else if("string".equals(dataType)) {
+            return "b";
         }
         return "l";
     }
@@ -521,10 +617,16 @@ public class CodeGen {
                         break;
                     case ("Array element"):
                     case ("Id"):
+                        String type;
+                        if ("Array element".equals(argument.getToken())) {
+                            type = get_type_var(argument.getChildren().get(0));
+                        } else {
+                            type = get_type_var(argument);
+                        }
                         if("Console.WriteLine".equals(nameFunction))
-                            blockText.add("\t\tmov \t$" + get_string_for_function("\"%d\\n\"") + ", %rdi\t# " + nameFunction + " " + argument.getToken());
+                            blockText.add("\t\tmov \t$" + get_string_for_function("\"" + get_format(type) + "\\n\"") + ", %rdi\t# " + nameFunction + " " + argument.getToken());
                         else
-                            blockText.add("\t\tmov \t$" + get_string_for_function("\"%d\"") + ", %rdi\t# " + nameFunction + " " + argument.getToken());
+                            blockText.add("\t\tmov \t$" + get_string_for_function("\"" + get_format(type) + "\"") + ", %rdi\t# " + nameFunction + " " + argument.getToken());
                         blockText.add("\t\tmov \t" + generatedOperand(argument) + ", %rsi");
                         blockText.add("\t\tcall\tprintf\n");
                         break;
@@ -533,27 +635,37 @@ public class CodeGen {
         }
     }
 
+    public static String get_format(String type) {
+        switch (type) {
+            case ("int"):
+                return "%d";
+            case ("double"):
+                return "%f";
+            case ("string"):
+                return "%c";
+            default:
+                return "%d";
+        }
+    }
+
     public static List<String> asm_variable_declaration_generation(String type, String value, AST variable) {
         List<String> generatedCodeDecl = new ArrayList<>();
         String declaredVar;
         switch (type) {
-//
-//            case ("StringLiteral"):
-//                declaredVar = get_name_declared_var("str");
-//                lastCreatedVariable = declaredVar;
-//                generatedCodeDecl.add("\n" + declaredVar + ":");
-//                switch (node.getTypeToken()){
-//                    case ("StringLiteral"):
-//                        generatedCodeDecl.add("\t\t.string " + node.getToken());
-//                        return generatedCodeDecl;
-//                    case ("Id"):
-//                        generatedCodeDecl.add("\t\t.string " + get_str_for_printf(get_type_var(node)));
-//                        return generatedCodeDecl;
-//                }
-//                break;
-
+            case ("string"):
+                declaredVar = variable.getToken();
+                generatedCodeDecl.add("\n" + declaredVar + ":");
+                if("".equals(value)) {
+                    generatedCodeDecl.add("\t\t.space -");
+                } else {
+                    generatedCodeDecl.add("\t\t.string " + value);
+                    int size = value.length() - 2;
+                    generatedCodeDecl.addAll(asm_variable_declaration_generation("int", Integer.toString(size), new AST (declaredVar + ".Length", "Id")));
+                }
+                return generatedCodeDecl;
             case ("int"):
                 declaredVar = variable.getToken();
+                checkDeclaredVar(declaredVar);
                 generatedCodeDecl.add("\n" + declaredVar + ":");
                 if("".equals(value)) {
                     generatedCodeDecl.add("\t\t.space 4");
