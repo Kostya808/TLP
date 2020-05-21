@@ -12,39 +12,65 @@ import java.util.List;
 import java.util.Objects;
 
 public class Compiler {
+    private static List<String> errorsList = new ArrayList<>();
+
     public static void main(String[] args) throws IOException {
+        File file;
+        String options = "non";
         List<AST> listNodes = new ArrayList<AST>();
         Lexer lexer = new Lexer();
-        if(args.length == 0) {
-            File file = new File(Objects.requireNonNull(Lexer.class.getClassLoader().getResource("search.cs")).getFile());
-            lexer.start(file, listNodes);
-        }
-        else {
-            File file = new File(args[0]);
-            lexer.start(file, listNodes);
-        }
-
-        Parser.check_error(listNodes);
-
-//        for (AST s : listNodes) { AST.print_tree(s, 4, 100); }
-
-        SemanticAnalysis.analysis(listNodes, "Level", 0);
-
-//        SemanticAnalysis.print_table();
-//        SemanticAnalysis.print_declared_func();
-
-        for (AST s : listNodes) { AST.print_tree(s, 4, 100); }
-
-        Parser.print_error();
-        SemanticAnalysis.print_error();
-        System.out.print("\n");
-
         CodeGen codeGeneration = new CodeGen();
-        codeGeneration.analysis(listNodes);
-        write_to_file(codeGeneration.get_assembler_code());
-//        for(String s :  codeGeneration.get_assembler_code()){
-//            System.out.println(s);
-//        }
+
+        if(args.length == 0) {
+            file = new File(Objects.requireNonNull(Lexer.class.getClassLoader().getResource("nod.cs")).getFile());
+        } else if(args.length == 2){
+            options = args[0];
+            file = new File(args[1]);
+        } else {
+            file = new File(args[0]);
+        }
+
+        switch (options) {
+            case ("non"):
+                Lexer.start(file, listNodes, options);
+                SemanticAnalysis.analysis(listNodes, "Level", 0);
+                check_error(listNodes);
+                CodeGen.analysis(listNodes);
+                write_to_file(CodeGen.get_assembler_code());
+                break;
+            case ("--dump-tokens"):
+                Lexer.start(file, listNodes, options);
+                Lexer.print_lexer();
+                check_error(listNodes);
+                break;
+            case ("--dump-ast"):
+                Lexer.start(file, listNodes, options);
+                Parser.print_parse(listNodes);
+                check_error(listNodes);
+                break;
+            case ("--dump-asm"):
+                Lexer.start(file, listNodes, options);
+                SemanticAnalysis.analysis(listNodes, "Level", 0);
+                check_error(listNodes);
+                CodeGen.analysis(listNodes);
+                CodeGen.print_asm();
+                break;
+        }
+        print_error();
+    }
+
+    private static void print_error() {
+        if(!errorsList.isEmpty()) {
+            System.out.println("\nErrors:");
+            for (String s : errorsList)
+                System.out.println(s);
+        }
+    }
+
+    private static void check_error (List<AST> listNodes) {
+        Lexer.print_unknown_tokens(errorsList);
+        Parser.print_error(listNodes, errorsList);
+        SemanticAnalysis.print_error(errorsList);
     }
 
     private static void write_to_file(List<String> asmCode) throws IOException {
@@ -54,5 +80,4 @@ public class Compiler {
         }
         writer.close();
     }
-
 }

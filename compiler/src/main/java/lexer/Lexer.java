@@ -10,15 +10,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Lexer {
     private static boolean ignore_flag;
-    private static List<String> rawSequences = new ArrayList<>();
+    private static List<String> unknownTokens = new ArrayList<>();
+    private static List<String> listLex = new ArrayList<>();
 
-    public static void start(File file, List<AST> listNodes) {
+    public static void start(File file, List<AST> listNodes, String options) {
         String readLine;
         int lineCounter = 0;
         ignore_flag = false;
@@ -29,31 +29,31 @@ public class Lexer {
             readLine = reader.readLine();
             while (readLine != null) {
                 lineCounter++;
-                tokens(readLine, lineCounter, listNodes);
+                tokens(readLine, lineCounter, listNodes, options);
                 readLine = reader.readLine(); // считываем остальные строки в цикле
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if(!rawSequences.isEmpty()) {
-            System.out.println("\nНеопределённые последовательности:");
-            for (String s : rawSequences)
-                System.out.println(s);
-        }
+//        if(!unknownTokens.isEmpty()) {
+//            System.out.println("\nНеопределённые последовательности:");
+//            for (String s : unknownTokens)
+//                System.out.println(s);
+//        }
     }
 
-    public static void tokens(String sourceString, int lineCounter, List<AST> listNodes) {
+    public static void tokens(String sourceString, int lineCounter, List<AST> listNodes, String options) {
         String processedStr = ignoring_comments(sourceString);
         if(processedStr.contains("\"")) {
             String[] subStr = quotation_mark(processedStr); //разбиение по кавычкам
             for(String str: subStr) {
                 if (str.contains("\"")) {
-                    parser_connection(new String[]{str}, lineCounter, sourceString, listNodes);
+                    parser_connection(new String[]{str}, lineCounter, sourceString, listNodes, options);
                 }
                 else {
                     String partitionResult = space_splitting(str); //вставка пробелов рядом со знаками
                     String[] subStrSpace = partitionResult.split(" ");
-                    parser_connection(subStrSpace, lineCounter, sourceString, listNodes);
+                    parser_connection(subStrSpace, lineCounter, sourceString, listNodes, options);
                 }
 
             }
@@ -61,24 +61,29 @@ public class Lexer {
         else {
             String partitionResult = space_splitting(processedStr); //вставка пробелов рядом со знаками
             String[] subStr = partitionResult.split(" "); // Разделения строки с помощью метода split()
-            parser_connection(subStr, lineCounter, sourceString, listNodes);
+            parser_connection(subStr, lineCounter, sourceString, listNodes, options);
         }
     }
 
-    private static void parser_connection(String[] arrString, int lineCounter, String sourceString, List<AST> listNodes) {
+    private static void parser_connection(String[] arrString, int lineCounter, String sourceString, List<AST> listNodes, String options) {
         String resultOfChecking;
         for(String s: arrString) {
             if(s.trim().length() != 0) {
                 resultOfChecking = ownership_check(s);
                 String output = "Loc=<" + lineCounter + ":" + sourceString.indexOf(s) + ">  " + resultOfChecking + "  " + s;
-//                System.out.println(output);
-                if(resultOfChecking.equals("unknown"))
-                    rawSequences.add(output);
+                listLex.add(output);
+
+                if(resultOfChecking.equals("unknown")) {
+                    unknownTokens.add(output);
+                }
+
                 Token token = new Token(s, resultOfChecking, lineCounter, sourceString.indexOf(s) + 1);
                 sourceString = replacement_of_spent_tokens(sourceString, s);
 
-                Parser.add_to_the_list_of_nodes(listNodes, token);
-                Parser.node_list_analysis(listNodes);
+                if(!"--dump-tokens".equals(options)) {
+                    Parser.add_to_the_list_of_nodes(listNodes, token);
+                    Parser.node_list_analysis(listNodes);
+                }
             }
         }
     }
@@ -212,6 +217,8 @@ public class Lexer {
             case ("--"):
                 return "OperatorDecrement";
 
+            case ("return"):
+                return "Return";
             case ("new"):
                 return "KeyWordNew";
             case ("null"):
@@ -274,6 +281,7 @@ public class Lexer {
                 return "unknown";
         }
     }
+
     private static String replacement_of_spent_tokens (String line, String s) {
         int firstOccurrence = line.indexOf(s);
         char[] bufferArrayChar = line.toCharArray();
@@ -281,5 +289,16 @@ public class Lexer {
             bufferArrayChar[i] = ' ';
         }
         return new String(bufferArrayChar);
+    }
+
+    public static void print_lexer () {
+        for (String lex : listLex)
+            System.out.println(lex);
+    }
+
+    public static void print_unknown_tokens (List<String> errors) {
+        if(!unknownTokens.isEmpty()) {
+            errors.addAll(unknownTokens);
+        }
     }
 }

@@ -450,14 +450,10 @@ public class SemanticAnalysis {
         errorsSem.add(errorToken);
     }
 
-    public static void print_error() {
+    public static void print_error(List<String> errors) {
         if (!errorsSem.isEmpty()) {
-            System.out.print("\n");
-            for (String error : errorsSem) {
-                System.out.println(error);
-            }
+            errors.addAll(errorsSem);
         }
-        System.out.print("\n");
     }
 
     public static void add_to_table(String nameVar, ScopeVar var) {

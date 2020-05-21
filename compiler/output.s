@@ -1,29 +1,50 @@
 .data
 
-stroka:
-		.string "abcdef"
+name:
+		.string "a"
 
-stroka.Length:
-		.int 6
-
-podstroka:
-		.string "bcd"
-
-podstroka.Length:
-		.int 3
-
-count:
-		.int 0
-
-j:
-		.int 0
+name.Length:
+		.int 1
 str0:
-		.string "Является подстрокой!\n"
+		.string "b"
+str1:
+		.string "Наибольший общий делитель: "
+str2:
+		.string "Введите значение переменной "
+str3:
+		.string "%s"
+str4:
+		.string ": "
+str5:
+		.string "%d"
+str6:
+		.string "%d\n"
 
 
 .bss
 
+a:
+		.space 4
+
+name_variable_initialization_variable:
+		.space 100
+
+b:
+		.space 4
+
+name_variable_initialization_variable_initialization_variable:
+		.space 100
+
 i:
+		.space 4
+
+message_print_message_with_numb:
+		.space 100
+
+numb_print_message_with_numb:
+		.space 4
+
+return_value_initialization_variable:
 		.space 4
 
 
@@ -36,52 +57,108 @@ main:
 		pushq %rbp
 		movq %rsp, %rbp
 
-		movl 	$0, i
+		# name -> name_variable_initialization_variable
+		movl 	$name, %eax
+		movl 	%eax, name_variable_initialization_variable
+		call 	initialization_variable
+
+		movl 	%edx, a
+
+		movl 	str0, %eax
+		movl 	%eax, name
+		movl 	$1, name.Length
+		# name -> name_variable_initialization_variable_initialization_variable
+		movl 	$name, %eax
+		movl 	%eax, name_variable_initialization_variable_initialization_variable
+		call 	initialization_variable
+
+		movl 	%edx, b
+
+		movl 	a, %eax
+		movl 	%eax, i
 
 		jmp 	condition_jump_1
 condition_jump_2:
-		# if 	# Array element == Array element
-		movl 	j, %edx
-		movb	podstroka(,%edx,1), %ah
-		movl 	i, %edx
-		movb	stroka(,%edx,1), %bh
-		cmpb	%bh, %ah
+		# if 	# Arithmetic expression == 0
+		movl	a, %eax	# a % i
+		movl	i, %ecx
+		xor 	%edx, %edx
+		divl	%ecx
+		movl	%edx, %eax
+		movl	$0, %ebx
+		cmpl	%ebx, %eax
 		jne 	condition_jump_3
 
-		incl	j
-		incl	count
-		jmp 	condition_jump_4
-condition_jump_3:
+		# if 	# Arithmetic expression == 0
+		movl	b, %eax	# b % i
+		movl	i, %ecx
+		xor 	%edx, %edx
+		divl	%ecx
+		movl	%edx, %eax
+		movl	$0, %ebx
+		cmpl	%ebx, %eax
+		jne 	condition_jump_4
 
-		movl 	$0, j
+		# "Наибольший общий делитель: " -> message_print_message_with_numb
+		movl 	$str1, %eax
+		movl 	%eax, message_print_message_with_numb
+		# i -> numb_print_message_with_numb
+		movl 	i, %eax
+		movl 	%eax, numb_print_message_with_numb
+		call 	print_message_with_numb
 
-		movl 	$0, count
+		movl 	$0, i
 
 condition_jump_4:
 
-		# if 	# count == podstroka.Length
-		movl	count, %eax
-		movl	podstroka.Length, %ebx
-		cmpl	%ebx, %eax
-		jne 	condition_jump_5
+condition_jump_3:
 
-		mov 	$str0, %rdi	# Console.Write "Является подстрокой!\n"
-		call	printf 
-
-		movl 	stroka.Length, %eax
-		movl 	%eax, i
-
-condition_jump_5:
-
-		incl	i
+		decl	i
 condition_jump_1:
 		movl	i, %eax
-		movl	stroka.Length, %ebx
+		movl	$0, %ebx
 		cmpl	%ebx, %eax
-		jl 	condition_jump_2
+		jg 	condition_jump_2
 
-		movl	$0, %eax
 		leave
 		ret
+
+initialization_variable:
+		pushq %rbp
+		movq %rsp, %rbp
+
+		mov 	$str2, %rdi	# Console.Write "Введите значение переменной "
+		call	printf 
+
+		mov 	$str3, %rdi	# Console.Write name_variable_initialization_variable
+		mov 	name_variable_initialization_variable, %rsi
+		call	printf
+
+		mov 	$str4, %rdi	# Console.Write ": "
+		call	printf 
+
+		mov $str5, %rdi	# scanf
+		leaq return_value_initialization_variable, %rsi
+		call scanf
+
+		movl 	return_value_initialization_variable, %edx
+		leave
+		ret
+
+print_message_with_numb:
+		pushq %rbp
+		movq %rsp, %rbp
+
+		mov 	$str3, %rdi	# Console.Write message_print_message_with_numb
+		mov 	message_print_message_with_numb, %rsi
+		call	printf
+
+		mov 	$str6, %rdi	# Console.WriteLine numb_print_message_with_numb
+		mov 	numb_print_message_with_numb, %rsi
+		call	printf
+
+		leave
+		ret
+
 
 

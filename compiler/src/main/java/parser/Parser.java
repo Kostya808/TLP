@@ -29,8 +29,8 @@ public class Parser {
                                             "Declaration if", "Declaration else if", "Declaration else"};
     private static String[]unfinished = new String[] {"Call func", "Logical expression", "Crement", "Var creat", "Creat several var"};
     private static String[]finished = new String[] {"Crement fin", "Call func fin", "Block function", "Creat and assign", "Var creat fin",
-                                            "Block for", "Block if", "Block else", "Block else if", "Block if else", "Assign operation", "Memory assign",
-                                            "Assign operation", "Creat several var fin", "Assign call func"};
+                                            "Block for", "Block if", "Block else", "Block else if", "Block if else", "Assign operation",
+                                            "Memory assign", "Assign operation", "Creat several var fin", "Assign call func", "Return fin"};
 
     private static List<StorageBrace> storBr = new ArrayList<>();
     private static List<String> errorsParser = new ArrayList<>();
@@ -128,8 +128,13 @@ public class Parser {
                             }
                         }
                     }
-                }
-                else if(Arrays.asList(accessModifiers).contains(listNodes.get(i).getTypeToken())) {
+                } else if(listNodes.get(i).getTypeToken().equals("Return")) {
+                    if(Arrays.asList(variable).contains(listNodes.get(i + 1).getTypeToken())) {
+                        if(listNodes.get(i + 2).getTypeToken().equals("Semicolon")) {
+                            node_fusion(listNodes, i, i + 2, "Return fin");
+                        }
+                    }
+                } else if(Arrays.asList(accessModifiers).contains(listNodes.get(i).getTypeToken())) {
                     if(check_class_declarations(i + 1, listNodes)) {
                         node_fusion(listNodes, i, i + 2, "Class declaration");
                     }
@@ -621,13 +626,11 @@ public class Parser {
         }
     }
 
-    public static void print_error() {
+    public static void print_error(List<AST> listNodes, List<String> errors) {
+        check_error(listNodes);
         if (!errorsParser.isEmpty()) {
-            for (String error : errorsParser) {
-                System.out.println(error);
-            }
+            errors.addAll(errorsParser);
         }
-        System.out.print("\n");
     }
 
     public static List<String> getErrors() {
@@ -644,6 +647,11 @@ public class Parser {
     public static String[] getDataType() {
         return dataType;
     }
+
+    public static void print_parse(List<AST> listNodes) {
+        for (AST s : listNodes) { AST.print_tree(s, 4, 100); }
+    }
+
 }
 
 
