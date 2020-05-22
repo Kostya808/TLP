@@ -1,50 +1,35 @@
 .data
 
-name:
-		.string "a"
+stroka:
+		.string "source string"
 
-name.Length:
-		.int 1
+stroka.Length:
+		.int 13
+
+podstroka:
+		.string "str"
+
+podstroka.Length:
+		.int 3
 str0:
-		.string "b"
+		.string "Строка: "
 str1:
-		.string "Наибольший общий делитель: "
+		.string "\n"
 str2:
-		.string "Введите значение переменной "
+		.string "Подстрока: "
+
+count:
+		.int 0
+
+j:
+		.int 0
 str3:
-		.string "%s"
-str4:
-		.string ": "
-str5:
-		.string "%d"
-str6:
-		.string "%d\n"
+		.string "Является подстрокой!"
 
 
 .bss
 
-a:
-		.space 4
-
-name_variable_initialization_variable:
-		.space 100
-
-b:
-		.space 4
-
-name_variable_initialization_variable_initialization_variable:
-		.space 100
-
 i:
-		.space 4
-
-message_print_message_with_numb:
-		.space 100
-
-numb_print_message_with_numb:
-		.space 4
-
-return_value_initialization_variable:
 		.space 4
 
 
@@ -57,105 +42,70 @@ main:
 		pushq %rbp
 		movq %rsp, %rbp
 
-		# name -> name_variable_initialization_variable
-		movl 	$name, %eax
-		movl 	%eax, name_variable_initialization_variable
-		call 	initialization_variable
+		mov 	$str0, %rdi	# Console.Write "Строка: "
+		call	printf 
 
-		movl 	%edx, a
+		mov 	$stroka, %rdi
+		call	printf
 
-		movl 	str0, %eax
-		movl 	%eax, name
-		movl 	$1, name.Length
-		# name -> name_variable_initialization_variable_initialization_variable
-		movl 	$name, %eax
-		movl 	%eax, name_variable_initialization_variable_initialization_variable
-		call 	initialization_variable
+		mov 	$str1, %rdi
+		call	printf
 
-		movl 	%edx, b
+		mov 	$str2, %rdi	# Console.Write "Подстрока: "
+		call	printf 
 
-		movl 	a, %eax
-		movl 	%eax, i
+		mov 	$podstroka, %rdi
+		call	printf
 
-		jmp 	condition_jump_1
-condition_jump_2:
-		# if 	# Arithmetic expression == 0
-		movl	a, %eax	# a % i
-		movl	i, %ecx
-		xor 	%edx, %edx
-		divl	%ecx
-		movl	%edx, %eax
-		movl	$0, %ebx
-		cmpl	%ebx, %eax
-		jne 	condition_jump_3
-
-		# if 	# Arithmetic expression == 0
-		movl	b, %eax	# b % i
-		movl	i, %ecx
-		xor 	%edx, %edx
-		divl	%ecx
-		movl	%edx, %eax
-		movl	$0, %ebx
-		cmpl	%ebx, %eax
-		jne 	condition_jump_4
-
-		# "Наибольший общий делитель: " -> message_print_message_with_numb
-		movl 	$str1, %eax
-		movl 	%eax, message_print_message_with_numb
-		# i -> numb_print_message_with_numb
-		movl 	i, %eax
-		movl 	%eax, numb_print_message_with_numb
-		call 	print_message_with_numb
+		mov 	$str1, %rdi
+		call	printf
 
 		movl 	$0, i
 
-condition_jump_4:
+		jmp 	condition_jump_1
+condition_jump_2:
+		# if 	# Array element == Array element
+		movl 	j, %ecx
+		movb	podstroka(,%ecx,1), %ah
+		movl 	i, %ecx
+		movb	stroka(,%ecx,1), %bh
+		cmpb	%bh, %ah
+		jne 	condition_jump_3
 
+		incl	j
+		incl	count
+		jmp 	condition_jump_4
 condition_jump_3:
 
-		decl	i
+		movl 	$0, j
+
+		movl 	$0, count
+
+condition_jump_4:
+
+		# if 	# count == podstroka.Length
+		movl	count, %eax
+		movl	podstroka.Length, %ebx
+		cmpl	%ebx, %eax
+		jne 	condition_jump_5
+
+		mov 	$str3, %rdi	# Console.WriteLine "Является подстрокой!"
+		call	printf 
+
+		mov 	$str1, %rdi
+		call	printf
+
+		movl 	stroka.Length, %eax
+		movl 	%eax, i
+
+condition_jump_5:
+
+		incl	i
 condition_jump_1:
 		movl	i, %eax
-		movl	$0, %ebx
+		movl	stroka.Length, %ebx
 		cmpl	%ebx, %eax
-		jg 	condition_jump_2
-
-		leave
-		ret
-
-initialization_variable:
-		pushq %rbp
-		movq %rsp, %rbp
-
-		mov 	$str2, %rdi	# Console.Write "Введите значение переменной "
-		call	printf 
-
-		mov 	$str3, %rdi	# Console.Write name_variable_initialization_variable
-		mov 	name_variable_initialization_variable, %rsi
-		call	printf
-
-		mov 	$str4, %rdi	# Console.Write ": "
-		call	printf 
-
-		mov $str5, %rdi	# scanf
-		leaq return_value_initialization_variable, %rsi
-		call scanf
-
-		movl 	return_value_initialization_variable, %edx
-		leave
-		ret
-
-print_message_with_numb:
-		pushq %rbp
-		movq %rsp, %rbp
-
-		mov 	$str3, %rdi	# Console.Write message_print_message_with_numb
-		mov 	message_print_message_with_numb, %rsi
-		call	printf
-
-		mov 	$str6, %rdi	# Console.WriteLine numb_print_message_with_numb
-		mov 	numb_print_message_with_numb, %rsi
-		call	printf
+		jl 	condition_jump_2
 
 		leave
 		ret

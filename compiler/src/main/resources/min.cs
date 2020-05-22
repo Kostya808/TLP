@@ -1,17 +1,18 @@
 public class Program
 {
     public static void Main()
-    {
+    {   
         int[] numbers = new int[5];
+        int min, minIndex;
 
+        Console.WriteLine("Введите 5 элементов массива:");
+        
         for (int i = 0; i < numbers.Length; i++) {
-            Console.Write("Введите ");
-            Console.Write(i);
-            Console.Write(" элемент массива: ");
-            numbers[i] = Console.ReadLine();
+            numbers[i] = init_array_element("Введите элемент ", i);
         }
-        int min = numbers[0];
-        int minIndex = 0;
+        
+        min = numbers[0];
+        minIndex = 0;
         
         for (int i = 0; i < numbers.Length; i++)
         {
@@ -23,5 +24,14 @@ public class Program
         }
         Console.Write("Минимальный элемент массива: ");
         Console.WriteLine(numbers[minIndex]);
+    }
+
+    public static int init_array_element(string message, int number_elemnet) {
+        int return_value;
+        Console.Write(message);
+        Console.Write(number_elemnet);
+        Console.Write(": ");
+        return_value = Console.ReadLine();        
+        return return_value;
     }
 }

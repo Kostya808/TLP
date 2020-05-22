@@ -22,7 +22,7 @@ public class Compiler {
         CodeGen codeGeneration = new CodeGen();
 
         if(args.length == 0) {
-            file = new File(Objects.requireNonNull(Lexer.class.getClassLoader().getResource("nod.cs")).getFile());
+            file = new File(Objects.requireNonNull(Lexer.class.getClassLoader().getResource("search.cs")).getFile());
         } else if(args.length == 2){
             options = args[0];
             file = new File(args[1]);

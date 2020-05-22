@@ -8,7 +8,7 @@ then
 	if [ $# -ne "$OneArg" ]
 	then
 		# Неверное количество параметров
-		echo "Error. Expected 'compiler.sh [options] <file.cs>' or 'compiler.sh <file.cs>'"
+		echo "Error. Expected './compiler.sh [options] <file.cs>' or './compiler.sh <file.cs>'"
 	else
 		# Один параметр
 		java -classpath ./target/classes Compiler $1

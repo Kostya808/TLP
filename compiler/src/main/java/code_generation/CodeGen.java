@@ -626,8 +626,8 @@ public class CodeGen {
             case "Array element":
                 AST index = operand.getChildren().get(1).getChildren().get(1);
                 String nameVar = operand.getChildren().get(0).getToken();
-                blockText.add("\t\tmovl \t" + generatedOperand(index) + ", %edx");
-                return nameVar + "(,%edx," + get_size_type(get_type_var(operand.getChildren().get(0))) + ")";
+                blockText.add("\t\tmovl \t" + generatedOperand(index) + ", %ecx");
+                return nameVar + "(,%ecx," + get_size_type(get_type_var(operand.getChildren().get(0))) + ")";
             default:
                 return "$" + operand.getToken();
         }
@@ -659,12 +659,11 @@ public class CodeGen {
             case ("Console.Write"):
             case ("Console.WriteLine"):
                 AST argument = listNodes.get(1).getChildren().get(1);
-//                generatedCode = asm_variable_declaration_generation("StringLiteral", "", argument);
-//                blockData.addAll(generatedCode);
                 switch (argument.getTypeToken()) {
                     case("StringLiteral"):
                         blockText.add("\t\tmov \t$" + get_string_for_function(argument.getToken()) + ", %rdi\t# " + nameFunction + " " + argument.getToken());
                         blockText.add("\t\tcall\tprintf \n");
+                        generated_line_translation(nameFunction);
                         break;
                     case ("Array element"):
                     case ("Id"):
@@ -676,15 +675,19 @@ public class CodeGen {
                         } else {
                             type = get_type_var(argument);
                             format = get_format(type);
-                            if("string".equals(type))
-                                format = "%s";
+                            if("string".equals(type)) {
+                                blockText.add("\t\tmov \t" + get_identifier_area(argument) + generatedOperand(argument) + ", %rdi");
+                                blockText.add("\t\tcall\tprintf\n");
+                                generated_line_translation(nameFunction);
+                                return;
+                            }
                         }
                         if("Console.WriteLine".equals(nameFunction))
                             blockText.add("\t\tmov \t$" + get_string_for_function("\"" + format + "\\n\"") + ", %rdi\t# "
-                                                                                + nameFunction + " " + argument.getToken());
+                                    + nameFunction + " " + argument.getToken());
                         else
                             blockText.add("\t\tmov \t$" + get_string_for_function("\"" + format + "\"") + ", %rdi\t# "
-                                                                                + nameFunction + " " + argument.getToken());
+                                    + nameFunction + " " + argument.getToken());
                         blockText.add("\t\tmov \t" + generatedOperand(argument) + ", %rsi");
                         blockText.add("\t\tcall\tprintf\n");
                         break;
@@ -694,6 +697,22 @@ public class CodeGen {
                 List<AST> listPassinVar = listNodes.get(1).getChildren();
                 call_function_processing(nameFunction, listPassinVar);
         }
+    }
+
+    public static void generated_line_translation (String nameFunction) {
+        if("Console.WriteLine".equals(nameFunction)) {
+            blockText.add("\t\tmov \t$" + get_string_for_function("\"\\n\"") + ", %rdi");
+            blockText.add("\t\tcall\tprintf\n");
+        }
+    }
+
+    public static String get_identifier_area(AST var) {
+        String nameVar = var.getToken();
+        for(String s : blockBss) {
+            if(s.contains(nameVar))
+                return "";
+        }
+        return "$";
     }
 
     public static void call_function_processing(String nameFunction, List<AST> listPassinVar) {

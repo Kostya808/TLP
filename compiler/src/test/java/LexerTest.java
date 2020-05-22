@@ -35,9 +35,9 @@ class LexerTest {
         expected.add(Lexer.ownership_check("Qwe13_"));
         actual.add("Id");
         expected.add(Lexer.ownership_check("Qw._e13_"));
-        actual.add("IdClassCall");
+        actual.add("Id");
         expected.add(Lexer.ownership_check("Q.w_e13_"));
-        actual.add("IdClassCall");
+        actual.add("Id");
         expected.add(Lexer.ownership_check("1Qw_e13"));
         actual.add("unknown");
         expected.add(Lexer.ownership_check(".Qw._e13_"));
