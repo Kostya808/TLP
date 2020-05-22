@@ -22,7 +22,8 @@ public class Compiler {
         CodeGen codeGeneration = new CodeGen();
 
         if(args.length == 0) {
-            file = new File(Objects.requireNonNull(Lexer.class.getClassLoader().getResource("search.cs")).getFile());
+//            file = new File(Objects.requireNonNull(Lexer.class.getClassLoader().getResource("nod.cs")).getFile());
+            return;
         } else if(args.length == 2){
             options = args[0];
             file = new File(args[1]);
@@ -35,8 +36,10 @@ public class Compiler {
                 Lexer.start(file, listNodes, options);
                 SemanticAnalysis.analysis(listNodes, "Level", 0);
                 check_error(listNodes);
-                CodeGen.analysis(listNodes);
-                write_to_file(CodeGen.get_assembler_code());
+                if (errorsList.isEmpty()) {
+                    CodeGen.analysis(listNodes);
+                    write_to_file(CodeGen.get_assembler_code());
+                }
                 break;
             case ("--dump-tokens"):
                 Lexer.start(file, listNodes, options);
@@ -52,8 +55,10 @@ public class Compiler {
                 Lexer.start(file, listNodes, options);
                 SemanticAnalysis.analysis(listNodes, "Level", 0);
                 check_error(listNodes);
-                CodeGen.analysis(listNodes);
-                CodeGen.print_asm();
+                if (errorsList.isEmpty()) {
+                    CodeGen.analysis(listNodes);
+                    CodeGen.print_asm();
+                }
                 break;
         }
         print_error();

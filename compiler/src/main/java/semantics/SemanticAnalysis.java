@@ -40,6 +40,14 @@ public class SemanticAnalysis {
                     }
                     break;
                 case ("Block function"):
+                    rawNodes.add(node);
+                    scopeRawNodes.add(scope);
+                    if (!node.getChildren().isEmpty()) {
+                        int buf = level + 1;
+                        analysis(node.getChildren(), scope + " -> " + buf + getLetter(scopeCount), buf);
+                        scopeCount++;
+                    }
+                    break;
                 case ("Block for"):
                 case ("Block if"):
                 case ("Block else if"):
@@ -93,6 +101,7 @@ public class SemanticAnalysis {
                     }
                     break;
                 case ("Call func fin"):
+                case ("Assign call func"):
                     rawNodes.add(node);
                     scopeRawNodes.add(scope);
                     break;
@@ -104,9 +113,94 @@ public class SemanticAnalysis {
                     case ("Call func fin"):
                         function_call_processing(rawNodes.get(i).getChildren().get(0).getChildren(), scopeRawNodes.get(i));
                         break;
+                    case ("Assign call func"):
+                        assign_function_call_processing(rawNodes.get(i).getChildren(), scopeRawNodes.get(i));
+                        break;
+                    case ("Block function"):
+                        block_function_processing(rawNodes.get(i).getChildren());
+                        break;
                 }
             }
         }
+    }
+
+    public static void block_function_processing(List<AST> listNodes) {
+        AST declaration = listNodes.get(0);
+        AST body = listNodes.get(1);
+        String typeFunction = get_type_of_table(declaration.getChildren().get(2).getChildren().get(1));
+        for (AST node : body.getChildren()) {
+            if("Return fin".equals(node.getToken())) {
+                AST returnValue = node.getChildren().get(1);
+                String typeReturnValue;
+                if(returnValue.getTypeToken().equals("Id"))
+                    typeReturnValue = get_type_of_table(returnValue);
+                else
+                    typeReturnValue = returnValue.getTypeToken();
+                if(!check_two_types(typeReturnValue, typeFunction)) {
+                    add_error(returnValue, "Function and return value are of different types", null);
+                }
+                break;
+            }
+        }
+
+    }
+
+    public static void assign_function_call_processing(List<AST> list, String scope) {
+        AST recipientVar = list.get(0);
+        AST callFunc = list.get(2);
+        AST function = callFunc.getChildren().get(0);
+
+        if(function.getToken().equals("Console.ReadLine"))
+            return;
+
+        String typeRecipientVar = scope_contains_var(scope, recipientVar);
+        String typeFunc = get_type_of_table(function);
+
+        function_call_processing(callFunc.getChildren(), scope);
+
+        if(!check_two_types(typeRecipientVar, typeFunc)) {
+            add_error(recipientVar, "Another accepted data type was expected", null);
+        }
+    }
+
+    public static boolean check_two_types(String type1, String type2) {
+        switch (type1) {
+            case ("int"):
+            case ("double"):
+            case ("DecimalInteger"):
+            case ("NotAnInteger"):
+                switch (type2) {
+                    case ("int"):
+                    case ("double"):
+                    case ("DecimalInteger"):
+                    case ("NotAnInteger"):
+                        return true;
+                    default:
+                        return false;
+                }
+            case ("string"):
+            case ("StringLiteral"):
+                switch (type2) {
+                    case ("string"):
+                    case ("StringLiteral"):
+                        return true;
+                    default:
+                        return false;
+                }
+            default:
+                return false;
+        }
+    }
+
+    public static String get_type_of_table(AST node) {
+        String nameVar = node.getToken();
+        if (table.containsKey(nameVar)) {
+            List<ScopeVar> listScopes = table.get(nameVar);
+            for (ScopeVar sc : listScopes) {
+                return sc.getType();
+            }
+        }
+        return "";
     }
 
     public static void function_call_processing(List<AST> list, String scope) {
@@ -114,7 +208,6 @@ public class SemanticAnalysis {
         if(declaredFunc.containsKey(funcNameCall)) {
             List <DeclaredVar> listDeclaredVar = declaredFunc.get(funcNameCall);
             List<AST> listPassedVar = list.get(1).getChildren();
-
             if(listPassedVar.size() - 2 != listDeclaredVar.size()) {
                 add_error(list.get(1), "The number of function arguments passed and received is different", null);
                 return;
@@ -377,11 +470,13 @@ public class SemanticAnalysis {
             List<ScopeVar> listScopes = table.get(nameVar);
             for (ScopeVar sc : listScopes) {
                 if (sc.getScope().equals(scope) || scope.contains(sc.getScope())) {
+//                    System.out.println(nameVar + " " + sc.getType() + "\n");
                     return sc.getType();
                 }
             }
         }
-        add_error(var, "Variable not declared", null);
+        if(!var.getToken().equals("Console.ReadLine"))
+            add_error(var, "Variable not declared", null);
         return "";
     }
 
@@ -517,6 +612,7 @@ public class SemanticAnalysis {
         }
         return name;
     }
+
     public static HashMap<String, List<ScopeVar>> getTable() {
         return table;
     }
