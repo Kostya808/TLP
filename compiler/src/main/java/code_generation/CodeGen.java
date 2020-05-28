@@ -19,7 +19,6 @@ public class CodeGen {
     private static int conditionalJumpCount = 0;
 
     public static void analysis(List<AST> listNodes) {
-//        for (AST s : listNodes) { AST.print_tree(s, 4, 100); }
         for(AST node : listNodes) {
             switch (node.getTypeToken()) {
                 case ("Block class"):
@@ -35,10 +34,8 @@ public class CodeGen {
                     }
                     function_declaration_processing(declarationFunction);
                     analysis(bodyFunction);
-//                    if(nameFunction.equalsIgnoreCase("main")) {
-                        blockText.add("\t\tleave");
-                        blockText.add("\t\tret\n");
-//                    }
+                    blockText.add("\t\tleave");
+                    blockText.add("\t\tret\n");
                     break;
                 case ("Block for"):
                     block_for_processing(node.getChildren());
@@ -943,5 +940,29 @@ public class CodeGen {
         for (String s : get_assembler_code()) {
             System.out.println(s);
         }
+    }
+
+    public static List<String> getBlockData() {
+        return blockData;
+    }
+
+    public static List<String> getBlockText() {
+        return blockText;
+    }
+
+    public static List<String> getBlockBss() {
+        return blockBss;
+    }
+
+    public static void setBlockData(List<String> blockData) {
+        CodeGen.blockData = blockData;
+    }
+
+    public static void setBlockText(List<String> blockText) {
+        CodeGen.blockText = blockText;
+    }
+
+    public static void setBlockBss(List<String> blockBss) {
+        CodeGen.blockBss = blockBss;
     }
 }
