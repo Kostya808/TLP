@@ -45,6 +45,7 @@ fi" >&3
 
 chmod +x ./compiler.sh
 
+echo ""
 echo "Выполните следующую команду:"
 echo "alias gcs='$mydir/compiler.sh'"
 
