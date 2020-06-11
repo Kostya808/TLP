@@ -1,4 +1,4 @@
-# make
+make
 mydir=$(pwd)
 
 exec 3>compiler.sh
